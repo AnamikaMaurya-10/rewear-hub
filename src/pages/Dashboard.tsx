@@ -28,14 +28,17 @@ export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedMode, setSelectedMode] = useState<string>("");
-  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedMode, setSelectedMode] = useState<string>("all");
+  const [selectedSize, setSelectedSize] = useState<string>("all");
+
+  // Map "all" sentinel to previous empty-string behavior expected by backend filters
+  const normalize = (v: string) => (v === "all" ? "" : v);
 
   const items = useQuery(api.items.getAvailable, {
-    category: selectedCategory as any,
-    mode: selectedMode as any,
-    size: selectedSize as any,
+    category: normalize(selectedCategory) as any,
+    mode: normalize(selectedMode) as any,
+    size: normalize(selectedSize) as any,
   });
 
   const myItems = useQuery(api.items.getMyItems);
@@ -243,7 +246,7 @@ export default function Dashboard() {
                           <SelectValue placeholder="Category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="all">All Categories</SelectItem>
                           <SelectItem value="tops">Tops</SelectItem>
                           <SelectItem value="bottoms">Bottoms</SelectItem>
                           <SelectItem value="dresses">Dresses</SelectItem>
@@ -258,7 +261,7 @@ export default function Dashboard() {
                           <SelectValue placeholder="Mode" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Modes</SelectItem>
+                          <SelectItem value="all">All Modes</SelectItem>
                           <SelectItem value="exchange">Exchange</SelectItem>
                           <SelectItem value="borrow">Borrow</SelectItem>
                           <SelectItem value="both">Both</SelectItem>
@@ -270,7 +273,7 @@ export default function Dashboard() {
                           <SelectValue placeholder="Size" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Sizes</SelectItem>
+                          <SelectItem value="all">All Sizes</SelectItem>
                           <SelectItem value="xs">XS</SelectItem>
                           <SelectItem value="s">S</SelectItem>
                           <SelectItem value="m">M</SelectItem>
