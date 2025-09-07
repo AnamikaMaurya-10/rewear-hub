@@ -30,7 +30,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
   const isValidEmail = (value: string) =>
@@ -91,20 +90,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       setIsLoading(false);
 
       setOtp("");
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    setError(null);
-    try {
-      await signIn("google");
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
-    } catch (err) {
-      console.error("Google login error:", err);
-      setError("Failed to sign in with Google. Please try again.");
-      setIsGoogleLoading(false);
     }
   };
 
@@ -204,40 +189,25 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       </div>
                     </div>
 
-                    {/* Google Login */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full mt-4"
-                      onClick={handleGoogleLogin}
-                      disabled={isLoading || isGoogleLoading}
-                    >
-                      {isGoogleLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Signing in...
-                        </>
-                      ) : (
-                        <>
-                          {/* Simple Google "G" mark */}
-                          <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded-sm bg-white">
-                            <span className="text-[12px] font-bold" style={{ color: "#4285F4" }}>G</span>
-                          </span>
-                          Continue with Google
-                        </>
-                      )}
-                    </Button>
-
                     {/* Guest Login */}
                     <Button
                       type="button"
                       variant="outline"
                       className="w-full mt-4"
                       onClick={handleGuestLogin}
-                      disabled={isLoading || isGoogleLoading}
+                      disabled={isLoading}
                     >
-                      <UserX className="mr-2 h-4 w-4" />
-                      Continue as Guest
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Signing in as Guest...
+                        </>
+                      ) : (
+                        <>
+                          <UserX className="mr-2 h-4 w-4" />
+                          Continue as Guest
+                        </>
+                      )}
                     </Button>
                   </div>
                 </CardContent>

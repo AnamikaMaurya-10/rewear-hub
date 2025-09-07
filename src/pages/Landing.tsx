@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useScroll, useTransform } from "framer-motion";
 
 export default function Landing() {
   const { isAuthenticated, isLoading, signOut } = useAuth();
@@ -26,6 +27,11 @@ export default function Landing() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { scrollYProgress } = useScroll();
+  const yLayer1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
+  const yLayer2 = useTransform(scrollYProgress, [0, 1], [0, -120]);
+  const yLayer3 = useTransform(scrollYProgress, [0, 1], [0, -60]);
 
   const handleGetStarted = () => {
     setIsNavigating(true);
@@ -97,7 +103,24 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 relative overflow-hidden">
+      {/* Parallax background layers */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-gradient-to-br from-purple-400/30 to-blue-400/30 blur-3xl"
+        style={{ y: yLayer1 }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-gradient-to-br from-green-400/20 to-blue-400/20 blur-2xl"
+        style={{ y: yLayer2 }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute top-2/3 left-1/4 h-64 w-64 rounded-full bg-gradient-to-br from-pink-400/20 to-purple-400/20 blur-2xl"
+        style={{ y: yLayer3 }}
+      />
+
       {/* Navigation */}
       <motion.nav 
         initial={{ y: -20, opacity: 0 }}
@@ -137,31 +160,14 @@ export default function Landing() {
                   )}
                 </Button>
               )}
-              <Button 
-                onClick={handleGetStarted}
-                disabled={isNavigating}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ripple elevation-2 disabled:opacity-70"
-              >
-                {isNavigating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Please wait...
-                  </>
-                ) : (
-                  <>
-                    {isAuthenticated ? "Dashboard" : "Get Started"}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </div>
       </motion.nav>
 
-      {/* Hero Section */}
+      {/* Hero Section with center CTAs and 3D feel */}
       <section className="relative overflow-hidden py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 perspective-[1200px]">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ x: -50, opacity: 0 }}
@@ -240,59 +246,66 @@ export default function Landing() {
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
+              style={{ transformStyle: "preserve-3d" }}
             >
-              <div className="relative z-10">
-                <Card className="elevation-4 border-0 bg-white/90 backdrop-blur-sm">
-                  <CardContent className="p-8">
-                    <div className="space-y-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
-                          <Recycle className="h-6 w-6 text-white" />
+              {/* Slight 3D card tilt on hover */}
+              <motion.div
+                whileHover={{ rotateX: -2, rotateY: 2, z: 10 }}
+                transition={{ type: "spring", stiffness: 120, damping: 12 }}
+              >
+                <div className="relative z-10">
+                  <Card className="elevation-4 border-0 bg-white/90 backdrop-blur-sm">
+                    <CardContent className="p-8">
+                      <div className="space-y-6">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
+                            <Recycle className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Exchange Mode</h3>
+                            <p className="text-gray-600">Permanent swaps, completely free</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">Exchange Mode</h3>
-                          <p className="text-gray-600">Permanent swaps, completely free</p>
+                        
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                            <Clock className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Borrow Mode</h3>
+                            <p className="text-gray-600">Rent for events and occasions</p>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                          <Clock className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">Borrow Mode</h3>
-                          <p className="text-gray-600">Rent for events and occasions</p>
-                        </div>
-                      </div>
 
-                      <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
-                        <div className="flex items-center space-x-2 text-sm text-purple-700">
-                          <TrendingUp className="h-4 w-4" />
-                          <span className="font-medium">Trending: Sustainable fashion is up 300%</span>
+                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
+                          <div className="flex items-center space-x-2 text-sm text-purple-700">
+                            <TrendingUp className="h-4 w-4" />
+                            <span className="font-medium">Trending: Sustainable fashion is up 300%</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {/* Floating elements */}
-              <motion.div
-                animate={{ y: [-10, 10, -10] }}
-                transition={{ duration: 4, repeat: Infinity }}
-                className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20"
-              />
-              <motion.div
-                animate={{ y: [10, -10, 10] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full opacity-20"
-              />
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Floating elements */}
+                <motion.div
+                  animate={{ y: [-10, 10, -10] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                  className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20"
+                />
+                <motion.div
+                  animate={{ y: [10, -10, 10] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="absolute -bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full opacity-20"
+                />
+              </motion.div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section with light 3D hover */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -317,7 +330,8 @@ export default function Landing() {
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
+                whileHover={{ y: -5, rotateX: -2, rotateY: 1.5, z: 8 }}
+                style={{ transformStyle: "preserve-3d" }}
                 className="group"
               >
                 <Card className="h-full border-0 elevation-2 hover:elevation-4 transition-all duration-300 bg-gradient-to-br from-white to-gray-50">
