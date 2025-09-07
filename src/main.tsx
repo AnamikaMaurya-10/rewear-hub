@@ -43,9 +43,6 @@ function RouteSyncer() {
   return null;
 }
 
-
-
-
 const router = createBrowserRouter([
   {
     element: <Root />,
