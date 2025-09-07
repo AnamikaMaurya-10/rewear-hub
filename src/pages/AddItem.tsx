@@ -71,7 +71,8 @@ export default function AddItem() {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+    const inputEl = e.currentTarget; // capture before any awaits to avoid pooled event nulls
+    const files = inputEl.files;
     if (!files) return;
 
     try {
@@ -89,7 +90,7 @@ export default function AddItem() {
       toast.error("Failed to load selected images");
     } finally {
       // Reset input so same file selection can be re-chosen if needed
-      e.currentTarget.value = "";
+      if (inputEl) inputEl.value = "";
     }
   };
 
