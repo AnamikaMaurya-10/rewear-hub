@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -33,7 +32,6 @@ export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
-  const [refreshKey, setRefreshKey] = useState(0);
 
   // Map "all" sentinel to previous empty-string behavior expected by backend filters
   const normalize = (v: string) => (v === "all" ? "" : v);
@@ -216,238 +214,237 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <Tabs defaultValue="browse" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white elevation-1">
-            <TabsTrigger value="browse" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
+          {/* Make tabs scrollable on mobile */}
+          <TabsList className="flex w-full overflow-x-auto gap-2 bg-white elevation-1 p-1 rounded-lg">
+            <TabsTrigger value="browse" className="whitespace-nowrap flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               Browse Items
             </TabsTrigger>
-            <TabsTrigger value="my-items">My Items</TabsTrigger>
-            <TabsTrigger value="requests">My Requests</TabsTrigger>
-            <TabsTrigger value="incoming">Incoming</TabsTrigger>
+            <TabsTrigger value="my-items" className="whitespace-nowrap flex-shrink-0">My Items</TabsTrigger>
+            <TabsTrigger value="requests" className="whitespace-nowrap flex-shrink-0">My Requests</TabsTrigger>
+            <TabsTrigger value="incoming" className="whitespace-nowrap flex-shrink-0">Incoming</TabsTrigger>
           </TabsList>
 
           {/* Browse Items Tab */}
           <TabsContent value="browse" className="space-y-6">
-            <ErrorBoundary onReset={() => setRefreshKey((k) => k + 1)}>
-              <div key={refreshKey} className="space-y-6">
-                {/* Search and Filters */}
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <Card className="elevation-2 border-0">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col lg:flex-row gap-4">
-                        <div className="flex-1 relative">
-                          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                          <Input
-                            placeholder="Search for clothes..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10"
-                          />
-                        </div>
-                        
-                        <div className="flex gap-4">
-                          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                            <SelectTrigger className="w-40">
-                              <SelectValue placeholder="Category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Categories</SelectItem>
-                              <SelectItem value="tops">Tops</SelectItem>
-                              <SelectItem value="bottoms">Bottoms</SelectItem>
-                              <SelectItem value="dresses">Dresses</SelectItem>
-                              <SelectItem value="outerwear">Outerwear</SelectItem>
-                              <SelectItem value="shoes">Shoes</SelectItem>
-                              <SelectItem value="accessories">Accessories</SelectItem>
-                            </SelectContent>
-                          </Select>
+            {/* Search and Filters */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="elevation-2 border-0">
+                <CardContent className="p-6">
+                  <div className="flex flex-col lg:flex-row gap-4">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Search for clothes..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    
+                    {/* Stack filters on mobile, 3 columns from sm+ */}
+                    <div className="grid w-full grid-cols-1 sm:grid-cols-3 gap-3">
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          <SelectItem value="tops">Tops</SelectItem>
+                          <SelectItem value="bottoms">Bottoms</SelectItem>
+                          <SelectItem value="dresses">Dresses</SelectItem>
+                          <SelectItem value="outerwear">Outerwear</SelectItem>
+                          <SelectItem value="shoes">Shoes</SelectItem>
+                          <SelectItem value="accessories">Accessories</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                          <Select value={selectedMode} onValueChange={setSelectedMode}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue placeholder="Mode" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Modes</SelectItem>
-                              <SelectItem value="exchange">Exchange</SelectItem>
-                              <SelectItem value="borrow">Borrow</SelectItem>
-                              <SelectItem value="both">Both</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      <Select value={selectedMode} onValueChange={setSelectedMode}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Mode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Modes</SelectItem>
+                          <SelectItem value="exchange">Exchange</SelectItem>
+                          <SelectItem value="borrow">Borrow</SelectItem>
+                          <SelectItem value="both">Both</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                          <Select value={selectedSize} onValueChange={setSelectedSize}>
-                            <SelectTrigger className="w-24">
-                              <SelectValue placeholder="Size" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Sizes</SelectItem>
-                              <SelectItem value="xs">XS</SelectItem>
-                              <SelectItem value="s">S</SelectItem>
-                              <SelectItem value="m">M</SelectItem>
-                              <SelectItem value="l">L</SelectItem>
-                              <SelectItem value="xl">XL</SelectItem>
-                              <SelectItem value="xxl">XXL</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      <Select value={selectedSize} onValueChange={setSelectedSize}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Sizes</SelectItem>
+                          <SelectItem value="xs">XS</SelectItem>
+                          <SelectItem value="s">S</SelectItem>
+                          <SelectItem value="m">M</SelectItem>
+                          <SelectItem value="l">L</SelectItem>
+                          <SelectItem value="xl">XL</SelectItem>
+                          <SelectItem value="xxl">XXL</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Items Grid */}
+            {itemsLoading ? (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+              >
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Card key={i} className="h-full border-0 elevation-2 overflow-hidden">
+                    <Skeleton className="aspect-square w-full" />
+                    <CardContent className="p-3 sm:p-4 space-y-3">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-12 rounded-full" />
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                        <Skeleton className="h-5 w-14 rounded-full" />
+                        <div className="ml-auto">
+                          <Skeleton className="h-5 w-16 rounded-full" />
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2 pt-1">
+                        <Skeleton className="h-7 w-7 rounded-full" />
+                        <Skeleton className="h-4 w-24" />
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-
-                {/* Items Grid */}
-                {itemsLoading ? (
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+              >
+                {filteredItems.map((item, index) => (
                   <motion.div
+                    key={item._id}
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                    transition={{ delay: 0.1 * index }}
+                    whileHover={{ y: -5 }}
+                    className="group cursor-pointer"
+                    onClick={() => handleItemClick(item._id)}
                   >
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <Card key={i} className="h-full border-0 elevation-2 overflow-hidden">
-                        <Skeleton className="aspect-square w-full" />
-                        <CardContent className="p-4 space-y-3">
-                          <Skeleton className="h-5 w-3/4" />
-                          <Skeleton className="h-4 w-full" />
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-5 w-12 rounded-full" />
-                            <Skeleton className="h-5 w-16 rounded-full" />
-                            <Skeleton className="h-5 w-14 rounded-full" />
-                            <div className="ml-auto">
-                              <Skeleton className="h-5 w-16 rounded-full" />
+                    <Card className="h-full border-0 elevation-2 hover:elevation-4 transition-all duration-300 overflow-hidden">
+                      <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
+                        {item.images?.[0] ? (
+                          <img
+                            src={item.images[0]}
+                            alt={item.title}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Shirt className="h-16 w-16 text-gray-400" />
+                          </div>
+                        )}
+
+                        {/* Hover gradient overlay */}
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                        {/* Mode badge (top-left) */}
+                        <div className="absolute top-3 left-3">
+                          <Badge className={getModeColor(item.mode)}>
+                            {item.mode === "exchange" && "Exchange"}
+                            {item.mode === "borrow" && "Borrow"}
+                            {item.mode === "both" && "Both"}
+                          </Badge>
+                        </div>
+
+                        {/* Price badge (top-right) */}
+                        {item.borrowFee && (
+                          <div className="absolute top-3 right-3">
+                            <Badge className="bg-white text-gray-700 shadow-sm">
+                              ₹{item.borrowFee}
+                            </Badge>
+                          </div>
+                        )}
+
+                        {/* Favorite button (non-functional UI) */}
+                        <button
+                          aria-label="favorite"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          className="absolute bottom-3 right-3 h-9 w-9 rounded-full bg-white/80 backdrop-blur-md text-gray-700 hover:text-rose-600 shadow-sm flex items-center justify-center transition-colors"
+                        >
+                          <Heart className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      <CardContent className="p-3 sm:p-4 space-y-3">
+                        <div>
+                          {/* Slightly smaller title on mobile */}
+                          <h3 className="font-semibold text-base sm:text-lg text-gray-900 line-clamp-1">
+                            {item.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        {/* Details chips */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {item.size.toUpperCase()}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {item.category}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {item.condition}
+                          </Badge>
+                          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-2xs">
+                            <MapPin className="h-3 w-3" />
+                            {item.location || "Local"}
+                          </span>
+                        </div>
+
+                        {/* Owner */}
+                        <div className="flex items-center gap-2 pt-1">
+                          <div className="relative">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-[11px] ring-2 ring-white">
+                              {item.owner?.name?.[0]?.toUpperCase() || "U"}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 pt-1">
-                            <Skeleton className="h-7 w-7 rounded-full" />
-                            <Skeleton className="h-4 w-24" />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          <span className="text-sm text-gray-600">
+                            {item.owner?.name || "Anonymous"}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                  >
-                    {filteredItems.map((item, index) => (
-                      <motion.div
-                        key={item._id}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.1 * index }}
-                        whileHover={{ y: -5 }}
-                        className="group cursor-pointer"
-                        onClick={() => handleItemClick(item._id)}
-                      >
-                        <Card className="h-full border-0 elevation-2 hover:elevation-4 transition-all duration-300 overflow-hidden">
-                          <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                            {item.images?.[0] ? (
-                              <img
-                                src={item.images[0]}
-                                alt={item.title}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Shirt className="h-16 w-16 text-gray-400" />
-                              </div>
-                            )}
+                ))}
+              </motion.div>
+            )}
 
-                            {/* Hover gradient overlay */}
-                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                            {/* Mode badge (top-left) */}
-                            <div className="absolute top-3 left-3">
-                              <Badge className={getModeColor(item.mode)}>
-                                {item.mode === "exchange" && "Exchange"}
-                                {item.mode === "borrow" && "Borrow"}
-                                {item.mode === "both" && "Both"}
-                              </Badge>
-                            </div>
-
-                            {/* Price badge (top-right) */}
-                            {item.borrowFee && (
-                              <div className="absolute top-3 right-3">
-                                <Badge className="bg-white text-gray-700 shadow-sm">
-                                  ₹{item.borrowFee}
-                                </Badge>
-                              </div>
-                            )}
-
-                            {/* Favorite button (non-functional UI) */}
-                            <button
-                              aria-label="favorite"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="absolute bottom-3 right-3 h-9 w-9 rounded-full bg-white/80 backdrop-blur-md text-gray-700 hover:text-rose-600 shadow-sm flex items-center justify-center transition-colors"
-                            >
-                              <Heart className="h-4 w-4" />
-                            </button>
-                          </div>
-                          
-                          <CardContent className="p-4 space-y-3">
-                            <div>
-                              <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
-                                {item.title}
-                              </h3>
-                              <p className="text-sm text-gray-600 line-clamp-2">
-                                {item.description}
-                              </p>
-                            </div>
-
-                            {/* Details chips */}
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
-                                {item.size.toUpperCase()}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs capitalize">
-                                {item.category}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs capitalize">
-                                {item.condition}
-                              </Badge>
-                              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-2xs">
-                                <MapPin className="h-3 w-3" />
-                                {item.location || "Local"}
-                              </span>
-                            </div>
-
-                            {/* Owner */}
-                            <div className="flex items-center gap-2 pt-1">
-                              <div className="relative">
-                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-[11px] ring-2 ring-white">
-                                  {item.owner?.name?.[0]?.toUpperCase() || "U"}
-                                </div>
-                              </div>
-                              <span className="text-sm text-gray-600">
-                                {item.owner?.name || "Anonymous"}
-                              </span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-
-                {filteredItems.length === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-12"
-                  >
-                    <Shirt className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
-                    <p className="text-gray-600">Try adjusting your search or filters</p>
-                  </motion.div>
-                )}
-              </div>
-            </ErrorBoundary>
+            {filteredItems.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
+              >
+                <Shirt className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
+                <p className="text-gray-600">Try adjusting your search or filters</p>
+              </motion.div>
+            )}
           </TabsContent>
 
           {/* My Items Tab */}
@@ -485,9 +482,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                   
-                  <CardContent className="p-4 space-y-3">
+                  <CardContent className="p-3 sm:p-4 space-y-3">
                     <div>
-                      <h3 className="font-semibold text-lg text-gray-900">{item.title}</h3>
+                      <h3 className="font-semibold text-base sm:text-lg text-gray-900">{item.title}</h3>
                       <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
                     </div>
                     
