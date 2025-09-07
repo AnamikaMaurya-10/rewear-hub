@@ -44,10 +44,15 @@ function DialogOverlay({
   )
 }
 
+type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+  // Optional close button toggle to support consumers like CommandDialog
+  showCloseButton?: boolean
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, ...props }, ref) => (
+  DialogContentProps
+>(({ className, showCloseButton, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -57,11 +62,22 @@ const DialogContent = React.forwardRef<
         "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
         "data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95",
         "data-[state=open]:slide-in-from-top-1/3 data-[state=closed]:slide-out-to-top-1/3",
-        "duration-200",
+        "duration-200 relative", // ensure close button positions properly
         className
       )}
       {...props}
-    />
+    >
+      {children}
+      {showCloseButton && (
+        <DialogClose
+          className="absolute right-3 top-3 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none"
+          aria-label="Close"
+        >
+          <XIcon className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogClose>
+      )}
+    </DialogPrimitive.Content>
   </DialogPortal>
 ))
 
