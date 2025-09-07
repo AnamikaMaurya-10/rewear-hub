@@ -41,6 +41,7 @@ export default function AddItem() {
   });
 
   const [images, setImages] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,13 +78,30 @@ export default function AddItem() {
 
     try {
       const remainingSlots = Math.max(0, 5 - images.length);
-      const selected = Array.from(files).slice(0, remainingSlots);
+      if (remainingSlots <= 0) {
+        toast.error("You can upload up to 5 images");
+        return;
+      }
 
+      const selectedAll = Array.from(files);
       // Optional: basic filter to accept only image files
-      const imageFiles = selected.filter((f) => f.type.startsWith("image/"));
+      const imageFiles = selectedAll.filter((f) => f.type.startsWith("image/"));
+      if (imageFiles.length === 0) {
+        toast.error("Please select valid image files");
+        return;
+      }
 
-      const dataUrls = await Promise.all(imageFiles.map((file) => readFileAsDataURL(file)));
+      const selected = imageFiles.slice(0, remainingSlots);
+      const dataUrls = await Promise.all(selected.map((file) => readFileAsDataURL(file)));
       setImages((prev) => [...prev, ...dataUrls]);
+      // clear any previous images error when at least one image is present
+      setErrors((prev) => {
+        const next = { ...prev };
+        if (prev.images && (prev.images.length === 0 || dataUrls.length > 0)) {
+          delete next.images;
+        }
+        return next;
+      });
       toast.success(`${dataUrls.length} image${dataUrls.length > 1 ? "s" : ""} added`);
     } catch (err) {
       console.error("Image upload error:", err);
@@ -94,20 +112,50 @@ export default function AddItem() {
     }
   };
 
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+    if (!formData.description.trim()) newErrors.description = "Description is required";
+    if (!formData.category) newErrors.category = "Category is required";
+    if (!formData.size) newErrors.size = "Size is required";
+    if (!formData.condition) newErrors.condition = "Condition is required";
+    if (!formData.mode) newErrors.mode = "Please select availability mode";
+
+    if (images.length === 0) {
+      newErrors.images = "Please add at least one photo";
+    }
+
+    if (formData.mode === "borrow" || formData.mode === "both") {
+      const fee = Number(formData.borrowFee);
+      const duration = Number(formData.borrowDuration);
+
+      if (!formData.borrowFee) {
+        newErrors.borrowFee = "Borrow fee is required";
+      } else if (!Number.isFinite(fee) || fee <= 0) {
+        newErrors.borrowFee = "Borrow fee must be a positive number";
+      }
+
+      if (!formData.borrowDuration) {
+        newErrors.borrowDuration = "Duration is required";
+      } else if (!Number.isFinite(duration) || duration <= 0) {
+        newErrors.borrowDuration = "Duration must be a positive number";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.title || !formData.description || !formData.category || !formData.size || !formData.condition || !formData.mode) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
 
-    if (formData.mode === "borrow" && (!formData.borrowFee || !formData.borrowDuration)) {
-      toast.error("Please set borrow fee and duration for borrow mode");
+    if (!validate()) {
+      toast.error("Please fix the highlighted errors");
       return;
     }
 
@@ -193,14 +241,16 @@ export default function AddItem() {
                       placeholder="e.g., Vintage Denim Jacket"
                       value={formData.title}
                       onChange={(e) => handleInputChange("title", e.target.value)}
-                      className="elevation-1"
+                      className={`elevation-1 ${errors.title ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                      aria-invalid={!!errors.title}
                     />
+                    {errors.title && <p className="text-xs text-red-600">{errors.title}</p>}
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="category">Category *</Label>
                     <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                      <SelectTrigger className="elevation-1">
+                      <SelectTrigger className={`elevation-1 ${errors.category ? "border-red-500 focus-visible:ring-red-500" : ""}`}>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -212,6 +262,7 @@ export default function AddItem() {
                         <SelectItem value="accessories">Accessories</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.category && <p className="text-xs text-red-600">{errors.category}</p>}
                   </div>
                 </div>
 
@@ -223,15 +274,17 @@ export default function AddItem() {
                     value={formData.description}
                     onChange={(e) => handleInputChange("description", e.target.value)}
                     rows={4}
-                    className="elevation-1"
+                    className={`elevation-1 ${errors.description ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                    aria-invalid={!!errors.description}
                   />
+                  {errors.description && <p className="text-xs text-red-600">{errors.description}</p>}
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="size">Size *</Label>
                     <Select value={formData.size} onValueChange={(value) => handleInputChange("size", value)}>
-                      <SelectTrigger className="elevation-1">
+                      <SelectTrigger className={`elevation-1 ${errors.size ? "border-red-500 focus-visible:ring-red-500" : ""}`}>
                         <SelectValue placeholder="Select size" />
                       </SelectTrigger>
                       <SelectContent>
@@ -243,12 +296,13 @@ export default function AddItem() {
                         <SelectItem value="xxl">XXL</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.size && <p className="text-xs text-red-600">{errors.size}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="condition">Condition *</Label>
                     <Select value={formData.condition} onValueChange={(value) => handleInputChange("condition", value)}>
-                      <SelectTrigger className="elevation-1">
+                      <SelectTrigger className={`elevation-1 ${errors.condition ? "border-red-500 focus-visible:ring-red-500" : ""}`}>
                         <SelectValue placeholder="Select condition" />
                       </SelectTrigger>
                       <SelectContent>
@@ -257,6 +311,7 @@ export default function AddItem() {
                         <SelectItem value="fair">Fair</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.condition && <p className="text-xs text-red-600">{errors.condition}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -308,7 +363,7 @@ export default function AddItem() {
                   ))}
                   
                   {images.length < 5 && (
-                    <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors elevation-1">
+                    <label className={`aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors elevation-1 ${errors.images ? "border-red-500" : "border-gray-300"}`}>
                       <Upload className="h-8 w-8 text-gray-400 mb-2" />
                       <span className="text-sm text-gray-600">Add Photo</span>
                       <input
@@ -321,6 +376,7 @@ export default function AddItem() {
                     </label>
                   )}
                 </div>
+                {errors.images && <p className="text-xs text-red-600">{errors.images}</p>}
                 <p className="text-sm text-gray-600">
                   Add up to 5 photos. First photo will be the main image.
                 </p>
@@ -338,9 +394,16 @@ export default function AddItem() {
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       formData.mode === "exchange"
                         ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
+                        : `border-gray-200 hover:border-green-300 ${errors.mode ? "border-red-500" : ""}`
                     }`}
-                    onClick={() => handleInputChange("mode", "exchange")}
+                    onClick={() => {
+                      handleInputChange("mode", "exchange");
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.mode;
+                        return next;
+                      });
+                    }}
                   >
                     <div className="text-center space-y-2">
                       <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -355,9 +418,16 @@ export default function AddItem() {
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       formData.mode === "borrow"
                         ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-blue-300"
+                        : `border-gray-200 hover:border-blue-300 ${errors.mode ? "border-red-500" : ""}`
                     }`}
-                    onClick={() => handleInputChange("mode", "borrow")}
+                    onClick={() => {
+                      handleInputChange("mode", "borrow");
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.mode;
+                        return next;
+                      });
+                    }}
                   >
                     <div className="text-center space-y-2">
                       <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
@@ -372,9 +442,16 @@ export default function AddItem() {
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       formData.mode === "both"
                         ? "border-purple-500 bg-purple-50"
-                        : "border-gray-200 hover:border-purple-300"
+                        : `border-gray-200 hover:border-purple-300 ${errors.mode ? "border-red-500" : ""}`
                     }`}
-                    onClick={() => handleInputChange("mode", "both")}
+                    onClick={() => {
+                      handleInputChange("mode", "both");
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.mode;
+                        return next;
+                      });
+                    }}
                   >
                     <div className="text-center space-y-2">
                       <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
@@ -385,6 +462,7 @@ export default function AddItem() {
                     </div>
                   </div>
                 </div>
+                {errors.mode && <p className="text-xs text-red-600">{errors.mode}</p>}
 
                 {(formData.mode === "borrow" || formData.mode === "both") && (
                   <motion.div
@@ -402,9 +480,12 @@ export default function AddItem() {
                           placeholder="50"
                           value={formData.borrowFee}
                           onChange={(e) => handleInputChange("borrowFee", e.target.value)}
-                          className="pl-10 elevation-1"
+                          className={`pl-10 elevation-1 ${errors.borrowFee ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                          aria-invalid={!!errors.borrowFee}
+                          min={1}
                         />
                       </div>
+                      {errors.borrowFee && <p className="text-xs text-red-600">{errors.borrowFee}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -415,8 +496,11 @@ export default function AddItem() {
                         placeholder="3"
                         value={formData.borrowDuration}
                         onChange={(e) => handleInputChange("borrowDuration", e.target.value)}
-                        className="elevation-1"
+                        className={`elevation-1 ${errors.borrowDuration ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                        aria-invalid={!!errors.borrowDuration}
+                        min={1}
                       />
+                      {errors.borrowDuration && <p className="text-xs text-red-600">{errors.borrowDuration}</p>}
                     </div>
                   </motion.div>
                 )}
