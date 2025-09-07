@@ -200,3 +200,10 @@
   .p-spacing-6 { padding: 48px; }
 }
 
+/* Hide any injected "Powered by Vly.ui" badge */
+[aria-label="Powered by Vly.ui"],
+[aria-label="powered by Vly.ui"],
+[aria-label="Powered by vly.ui"],
+[aria-label="powered by vly.ui"] {
+  display: none !important;
+}

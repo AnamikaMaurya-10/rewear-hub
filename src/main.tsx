@@ -47,6 +47,16 @@ function Root() {
   return (
     <>
       <RouteSyncer />
+      {/* Powered by badge */}
+      <a
+        href="https://vly.ai"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Powered by vyl.ai"
+        className="fixed bottom-3 right-3 z-50 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1.5 text-xs shadow-lg hover:opacity-90 transition-opacity border border-white/10"
+      >
+        Powered by <span className="font-semibold ml-1">vyl.ai</span>
+      </a>
       <Outlet />
     </>
   );
