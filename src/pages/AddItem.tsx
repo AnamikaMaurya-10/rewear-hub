@@ -41,6 +41,7 @@ export default function AddItem() {
   });
 
   const [images, setImages] = useState<string[]>([]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isLoading) {
@@ -60,15 +61,35 @@ export default function AddItem() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const readFileAsDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      // In a real app, you'd upload to a service like Cloudinary or AWS S3
-      // For demo purposes, we'll use placeholder URLs
-      const newImages = Array.from(files).map((file, index) => 
-        `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop&crop=center&auto=format&q=80&${index}`
-      );
-      setImages(prev => [...prev, ...newImages].slice(0, 5)); // Max 5 images
+    if (!files) return;
+
+    try {
+      const remainingSlots = Math.max(0, 5 - images.length);
+      const selected = Array.from(files).slice(0, remainingSlots);
+
+      // Optional: basic filter to accept only image files
+      const imageFiles = selected.filter((f) => f.type.startsWith("image/"));
+
+      const dataUrls = await Promise.all(imageFiles.map((file) => readFileAsDataURL(file)));
+      setImages((prev) => [...prev, ...dataUrls]);
+      toast.success(`${dataUrls.length} image${dataUrls.length > 1 ? "s" : ""} added`);
+    } catch (err) {
+      console.error("Image upload error:", err);
+      toast.error("Failed to load selected images");
+    } finally {
+      // Reset input so same file selection can be re-chosen if needed
+      e.currentTarget.value = "";
     }
   };
 

@@ -248,13 +248,23 @@ export const seedDemo = mutation({
 
     // A small pool of image URLs (Unsplash)
     const images: Array<string> = [
-      "https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975979651-1bcd4a6db0c0?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1200&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1520975922139-1970c8f29c97?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1520975693411-b5461b59c88d?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1490481651871-658f8e1f6f50?q=80&w=1200&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1520975619019-44d8b4f8c0b8?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1520975657286-6c06b05f54b2?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1520975538770-5f8bb2b3c0c0?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542060748-10c28b62716c?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542291025-7eec264c27f0?q=80&w=1200&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1520975432361-47a974b26c9c?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1617038220310-3c1b4f6c88be?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1518544801976-3e8d66f2e39b?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975538770-5f8bb2b3c0c0?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?q=80&w=1200&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=1200&auto=format&fit=crop",
     ];
 
@@ -284,9 +294,19 @@ export const seedDemo = mutation({
     function rand<T>(arr: Array<T>): T {
       return arr[Math.floor(Math.random() * arr.length)];
     }
-
     function randInt(min: number, max: number): number {
       return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function pickImages(pool: Array<string>, min = 1, max = 3): Array<string> {
+      const count = randInt(min, max);
+      const copy = [...pool];
+      const picked: Array<string> = [];
+      for (let i = 0; i < count && copy.length > 0; i++) {
+        const idx = Math.floor(Math.random() * copy.length);
+        picked.push(copy[idx]);
+        copy.splice(idx, 1);
+      }
+      return picked;
     }
 
     for (let i = 0; i < count; i++) {
@@ -296,7 +316,6 @@ export const seedDemo = mutation({
       const condition = rand(conditions);
       const location = rand(cities);
       const title = `${rand(titles)} ${randInt(1, 99)}`;
-      const img = rand(images);
 
       const isBorrowable = mode === "borrow" || mode === "both";
       const borrowFee = isBorrowable ? randInt(99, 599) : undefined;
@@ -306,8 +325,8 @@ export const seedDemo = mutation({
         ownerId: demoUser._id,
         title,
         description:
-          "Lightly used, well-maintained. Great fit and perfect for casual or semi-formal occasions.",
-        images: [img],
+          "Lightly used and well-maintained. Great for casual wear and events. Clean and ready to wear.",
+        images: pickImages(images),
         category,
         size,
         condition,
