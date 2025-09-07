@@ -32,6 +32,7 @@ export default function Landing() {
   const yLayer1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
   const yLayer2 = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const yLayer3 = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const yLayer4 = useTransform(scrollYProgress, [0, 1], [0, -300]);
 
   const handleGetStarted = () => {
     setIsNavigating(true);
@@ -120,6 +121,11 @@ export default function Landing() {
         className="pointer-events-none absolute top-2/3 left-1/4 h-64 w-64 rounded-full bg-gradient-to-br from-pink-400/20 to-purple-400/20 blur-2xl"
         style={{ y: yLayer3 }}
       />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 right-1/3 h-[28rem] w-[28rem] rounded-full bg-gradient-to-br from-blue-400/15 to-indigo-400/15 blur-[90px]"
+        style={{ y: yLayer4 }}
+      />
 
       {/* Navigation */}
       <motion.nav 
@@ -175,19 +181,28 @@ export default function Landing() {
         >
           <div className="pointer-events-auto relative group" style={{ perspective: 1000 }}>
             {/* Depth glow shadow */}
-            <div className="absolute -inset-1 translate-y-2 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 blur-md opacity-50 group-hover:opacity-70 transition-all"></div>
+            <div className="absolute -inset-1 translate-y-2 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 blur-md opacity-50 group-hover:opacity-70 transition-all" />
             <motion.div
-              whileHover={{ rotateX: -3, rotateY: 3, y: -2, scale: 1.02 }}
-              whileTap={{ y: 2, scale: 0.99 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              whileHover={{ rotateX: -6, rotateY: 6, y: -3, scale: 1.03 }}
+              whileTap={{ y: 2, scale: 0.985 }}
+              transition={{ type: "spring", stiffness: 220, damping: 16 }}
               style={{ transformStyle: "preserve-3d" }}
               className="relative"
             >
+              {/* Button base (gives a 3D platform look) */}
+              <div className="absolute -inset-x-4 -bottom-3 h-3 bg-gradient-to-b from-purple-900/25 to-blue-900/20 rounded-2xl blur-md opacity-80 -z-10" />
+              <div className="absolute inset-x-2 -bottom-2 h-2 bg-gradient-to-b from-purple-700/25 to-blue-700/20 rounded-xl blur-sm opacity-90 -z-10" />
+
               <Button
                 onClick={handleGetStarted}
                 disabled={isNavigating}
-                className="h-14 px-8 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg elevation-3 shadow-[0_12px_24px_rgba(79,70,229,0.35)]"
+                className="relative h-14 px-9 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg elevation-3 shadow-[0_14px_32px_rgba(79,70,229,0.35),0_6px_14px_rgba(59,130,246,0.25)] border border-white/10 transform-gpu will-change-transform ring-1 ring-white/15"
               >
+                {/* Subtle top shine */}
+                <span className="pointer-events-none absolute inset-x-0 -top-1 h-1/2 bg-white/10 blur-md rounded-t-2xl" />
+                {/* Inner gradient edge for depth */}
+                <span className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
+
                 {isNavigating ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
