@@ -23,6 +23,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -45,6 +46,8 @@ export default function Dashboard() {
   const myItems = useQuery(api.items.getMyItems);
   const myRequests = useQuery(api.requests.getMyRequests);
   const itemRequests = useQuery(api.requests.getMyItemRequests);
+
+  const itemsLoading = items === undefined;
 
   if (isLoading) {
     return (
@@ -290,87 +293,143 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Items Grid */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            >
-              {filteredItems.map((item, index) => (
-                <motion.div
-                  key={item._id}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1 * index }}
-                  whileHover={{ y: -5 }}
-                  className="group cursor-pointer"
-                  onClick={() => handleItemClick(item._id)}
-                >
-                  <Card className="h-full border-0 elevation-2 hover:elevation-4 transition-all duration-300 overflow-hidden">
-                    <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                      {item.images?.[0] ? (
-                        <img
-                          src={item.images[0]}
-                          alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Shirt className="h-16 w-16 text-gray-400" />
-                        </div>
-                      )}
-                      <div className="absolute top-3 left-3">
-                        <Badge className={getModeColor(item.mode)}>
-                          {item.mode === "exchange" && "Exchange"}
-                          {item.mode === "borrow" && "Borrow"}
-                          {item.mode === "both" && "Both"}
-                        </Badge>
-                      </div>
-                      {item.borrowFee && (
-                        <div className="absolute top-3 right-3">
-                          <Badge className="bg-white text-gray-700">
-                            ₹{item.borrowFee}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                    
+            {itemsLoading ? (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              >
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Card key={i} className="h-full border-0 elevation-2 overflow-hidden">
+                    <Skeleton className="aspect-square w-full" />
                     <CardContent className="p-4 space-y-3">
-                      <div>
-                        <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
-                          {item.title}
-                        </h3>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {item.description}
-                        </p>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline" className="text-xs">
-                            {item.size.toUpperCase()}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {item.category}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center space-x-1 text-xs text-gray-500">
-                          <MapPin className="h-3 w-3" />
-                          <span>{item.location || "Local"}</span>
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-12 rounded-full" />
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                        <Skeleton className="h-5 w-14 rounded-full" />
+                        <div className="ml-auto">
+                          <Skeleton className="h-5 w-16 rounded-full" />
                         </div>
                       </div>
-                      
-                      <div className="flex items-center space-x-2 pt-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center text-xs">
-                          {item.owner?.name?.[0]?.toUpperCase() || "U"}
-                        </div>
-                        <span className="text-sm text-gray-600">{item.owner?.name || "Anonymous"}</span>
+                      <div className="flex items-center gap-2 pt-1">
+                        <Skeleton className="h-7 w-7 rounded-full" />
+                        <Skeleton className="h-4 w-24" />
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-              ))}
-            </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              >
+                {filteredItems.map((item, index) => (
+                  <motion.div
+                    key={item._id}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 * index }}
+                    whileHover={{ y: -5 }}
+                    className="group cursor-pointer"
+                    onClick={() => handleItemClick(item._id)}
+                  >
+                    <Card className="h-full border-0 elevation-2 hover:elevation-4 transition-all duration-300 overflow-hidden">
+                      <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
+                        {item.images?.[0] ? (
+                          <img
+                            src={item.images[0]}
+                            alt={item.title}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Shirt className="h-16 w-16 text-gray-400" />
+                          </div>
+                        )}
+
+                        {/* Hover gradient overlay */}
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                        {/* Mode badge (top-left) */}
+                        <div className="absolute top-3 left-3">
+                          <Badge className={getModeColor(item.mode)}>
+                            {item.mode === "exchange" && "Exchange"}
+                            {item.mode === "borrow" && "Borrow"}
+                            {item.mode === "both" && "Both"}
+                          </Badge>
+                        </div>
+
+                        {/* Price badge (top-right) */}
+                        {item.borrowFee && (
+                          <div className="absolute top-3 right-3">
+                            <Badge className="bg-white text-gray-700 shadow-sm">
+                              ₹{item.borrowFee}
+                            </Badge>
+                          </div>
+                        )}
+
+                        {/* Favorite button (non-functional UI) */}
+                        <button
+                          aria-label="favorite"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          className="absolute bottom-3 right-3 h-9 w-9 rounded-full bg-white/80 backdrop-blur-md text-gray-700 hover:text-rose-600 shadow-sm flex items-center justify-center transition-colors"
+                        >
+                          <Heart className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
+                            {item.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        {/* Details chips */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {item.size.toUpperCase()}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {item.category}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {item.condition}
+                          </Badge>
+                          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-2xs">
+                            <MapPin className="h-3 w-3" />
+                            {item.location || "Local"}
+                          </span>
+                        </div>
+
+                        {/* Owner */}
+                        <div className="flex items-center gap-2 pt-1">
+                          <div className="relative">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-[11px] ring-2 ring-white">
+                              {item.owner?.name?.[0]?.toUpperCase() || "U"}
+                            </div>
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            {item.owner?.name || "Anonymous"}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
 
             {filteredItems.length === 0 && (
               <motion.div

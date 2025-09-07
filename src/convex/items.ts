@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { v, type Infer } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
 import { categoryValidator, itemModeValidator, sizeValidator } from "./schema";
