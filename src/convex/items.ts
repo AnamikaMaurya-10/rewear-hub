@@ -191,3 +191,122 @@ export const deleteItem = mutation({
     await ctx.db.delete(args.itemId);
   },
 });
+
+export const seedDemo = mutation({
+  args: { count: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const count = Math.max(1, Math.min(args.count ?? 50, 200));
+
+    // Ensure a demo owner user exists
+    const DEMO_EMAIL = "demo@rewear.local";
+    let demoUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", DEMO_EMAIL))
+      .unique()
+      .catch(async () => null);
+
+    if (!demoUser) {
+      const demoUserId = await ctx.db.insert("users", {
+        name: "Demo Seeder",
+        email: DEMO_EMAIL,
+        image: "https://i.pravatar.cc/100?u=rewear-demo",
+        role: "user",
+        trustScore: 95,
+        location: "Mumbai",
+      });
+      demoUser = await ctx.db.get(demoUserId);
+    }
+
+    if (!demoUser) {
+      throw new Error("Failed to ensure demo user");
+    }
+
+    const categories: Array<Infer<typeof import("./schema").categoryValidator>> = [
+      "tops",
+      "bottoms",
+      "dresses",
+      "outerwear",
+      "shoes",
+      "accessories",
+    ];
+    const sizes: Array<Infer<typeof import("./schema").sizeValidator>> = ["xs", "s", "m", "l", "xl", "xxl"];
+    const modes: Array<Infer<typeof import("./schema").itemModeValidator>> = ["exchange", "borrow", "both"];
+    const conditions: Array<string> = ["excellent", "good", "fair"];
+    const cities: Array<string> = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Pune", "Chennai", "Kolkata", "Jaipur"];
+
+    // A small pool of image URLs (Unsplash)
+    const images: Array<string> = [
+      "https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975922139-1970c8f29c97?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975693411-b5461b59c88d?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975619019-44d8b4f8c0b8?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975657286-6c06b05f54b2?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975538770-5f8bb2b3c0c0?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975432361-47a974b26c9c?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=1200&auto=format&fit=crop",
+    ];
+
+    const titles = [
+      "Classic Denim Jacket",
+      "Casual White Tee",
+      "Black Slim-fit Jeans",
+      "Floral Summer Dress",
+      "Cozy Knit Sweater",
+      "Sporty Sneakers",
+      "Elegant Silk Scarf",
+      "Waterproof Windbreaker",
+      "Formal Oxford Shirt",
+      "Comfy Joggers",
+      "Leather Chelsea Boots",
+      "Checked Overshirt",
+      "Linen Shorts",
+      "Puffer Jacket",
+      "Graphic Hoodie",
+      "Pleated Skirt",
+      "Canvas Tote Bag",
+      "Running Shoes",
+      "Chino Pants",
+      "Corduroy Jacket",
+    ];
+
+    function rand<T>(arr: Array<T>): T {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function randInt(min: number, max: number): number {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    for (let i = 0; i < count; i++) {
+      const category = rand(categories);
+      const size = rand(sizes);
+      const mode = rand(modes);
+      const condition = rand(conditions);
+      const location = rand(cities);
+      const title = `${rand(titles)} ${randInt(1, 99)}`;
+      const img = rand(images);
+
+      const isBorrowable = mode === "borrow" || mode === "both";
+      const borrowFee = isBorrowable ? randInt(99, 599) : undefined;
+      const borrowDuration = isBorrowable ? randInt(3, 14) : undefined;
+
+      await ctx.db.insert("items", {
+        ownerId: demoUser._id,
+        title,
+        description:
+          "Lightly used, well-maintained. Great fit and perfect for casual or semi-formal occasions.",
+        images: [img],
+        category,
+        size,
+        condition,
+        mode,
+        borrowFee,
+        borrowDuration,
+        isAvailable: true,
+        location,
+      });
+    }
+
+    return { inserted: count };
+  },
+});
