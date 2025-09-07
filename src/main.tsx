@@ -74,10 +74,4 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <RouterProvider router={router} />
         <Toaster />
-        {/* Show only in production */}
-        {import.meta.env.PROD && <PoweredByVercel />}
-        {import.meta.env.PROD && <PoweredByVly />}
-      </ConvexAuthProvider>
-    </InstrumentationProvider>
-  </StrictMode>,
-);
+       
