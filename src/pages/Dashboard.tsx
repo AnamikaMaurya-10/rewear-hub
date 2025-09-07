@@ -29,6 +29,28 @@ export default function Dashboard() {
   const [selectedSize, setSelectedSize] = useState<string>("all");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // Moved here: navigation/dark mode/mobile menu/chat loading states (MUST be before any early returns)
+  const [isNavigatingAdd, setIsNavigatingAdd] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") return true;
+    if (saved === "light") return false;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
+  const toggleDarkMode = () => setIsDark((d) => !d);
+  const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
+
   // Distance filter state
   const [radiusKm, setRadiusKm] = useState<number>(10);
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
@@ -153,34 +175,6 @@ export default function Dashboard() {
     }
   };
 
-  // Add navigation/dark mode/mobile menu/chat loading states
-  const [isNavigatingAdd, setIsNavigatingAdd] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") return true;
-    if (saved === "light") return false;
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
-  const toggleDarkMode = () => setIsDark((d) => !d);
-
-  // Add: styled classes for theme toggle
-  const themeToggleClasses = isDark
-    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white border-transparent shadow-md hover:shadow-lg"
-    : "bg-white text-gray-700 hover:bg-accent ring-1 ring-border";
-
-  const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
       {/* Header */}
@@ -208,9 +202,14 @@ export default function Dashboard() {
                 size="icon"
                 onClick={toggleDarkMode}
                 aria-label="Toggle dark mode"
-                className={`shrink-0 rounded-full transition-all duration-300 ${themeToggleClasses}`}
+                aria-pressed={isDark}
+                className="shrink-0 border-0 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 backdrop-blur-md elevation-1 ring-0 data-[state=on]:ring-2 data-[state=on]:ring-primary"
               >
-                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDark ? (
+                  <Sun className="h-4 w-4 text-amber-400" />
+                ) : (
+                  <Moon className="h-4 w-4 text-blue-600" />
+                )}
               </Button>
 
               <Button
@@ -277,9 +276,14 @@ export default function Dashboard() {
                 size="icon"
                 onClick={toggleDarkMode}
                 aria-label="Toggle dark mode"
-                className={`rounded-full transition-all duration-300 ${themeToggleClasses}`}
+                aria-pressed={isDark}
+                className="border-0 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 backdrop-blur-md elevation-1"
               >
-                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDark ? (
+                  <Sun className="h-4 w-4 text-amber-400" />
+                ) : (
+                  <Moon className="h-4 w-4 text-blue-600" />
+                )}
               </Button>
 
               {/* Hamburger */}
