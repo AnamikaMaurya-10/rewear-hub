@@ -31,6 +31,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const isValidEmail = (value: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const emailInvalid = emailTouched && !isValidEmail(email);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -43,6 +48,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+
+    // Client-side guard
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData(event.currentTarget);
       await signIn("email-otp", formData);
@@ -53,7 +66,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       setError(
         error instanceof Error
           ? error.message
-          : "Failed to send verification code. Please try again.",
+          : "Failed to send verification code. Please try again."
       );
       setIsLoading(false);
     }
@@ -140,7 +153,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
               </CardHeader>
               <form onSubmit={handleEmailSubmit}>
                 <CardContent>
-                  
                   <div className="relative flex items-center gap-2">
                     <div className="relative flex-1">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -148,16 +160,21 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         name="email"
                         placeholder="name@example.com"
                         type="email"
-                        className="pl-9"
+                        className={`pl-9 ${emailInvalid ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                         disabled={isLoading}
                         required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onBlur={() => setEmailTouched(true)}
+                        aria-invalid={emailInvalid}
+                        aria-describedby={emailInvalid ? "email-error" : undefined}
                       />
                     </div>
                     <Button
                       type="submit"
                       variant="outline"
                       size="icon"
-                      disabled={isLoading}
+                      disabled={isLoading || !isValidEmail(email)}
                     >
                       {isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -166,6 +183,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       )}
                     </Button>
                   </div>
+                  {emailInvalid && !error && (
+                    <p id="email-error" className="mt-2 text-sm text-red-500">
+                      Please enter a valid email address.
+                    </p>
+                  )}
                   {error && (
                     <p className="mt-2 text-sm text-red-500">{error}</p>
                   )}

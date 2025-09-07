@@ -50,42 +50,47 @@ export const getAvailable = query({
     size: v.optional(sizeValidator),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query("items").withIndex("by_availability", (q) =>
-      q.eq("isAvailable", true)
-    );
-
-    const items = await query.collect();
-    
-    // Filter by category if provided
-    let filteredItems = items;
-    if (args.category) {
-      filteredItems = filteredItems.filter(item => item.category === args.category);
-    }
-    
-    // Filter by mode if provided
-    if (args.mode) {
-      filteredItems = filteredItems.filter(item => 
-        item.mode === args.mode || item.mode === "both"
+    try {
+      let query = ctx.db.query("items").withIndex("by_availability", (q) =>
+        q.eq("isAvailable", true)
       );
-    }
-    
-    // Filter by size if provided
-    if (args.size) {
-      filteredItems = filteredItems.filter(item => item.size === args.size);
-    }
 
-    // Get owner information for each item
-    const itemsWithOwners = await Promise.all(
-      filteredItems.map(async (item) => {
-        const owner = await ctx.db.get(item.ownerId);
-        return {
-          ...item,
-          owner: owner ? { name: owner.name, image: owner.image } : null,
-        };
-      })
-    );
+      const items = await query.collect();
 
-    return itemsWithOwners;
+      // Filter by category if provided
+      let filteredItems = items;
+      if (args.category) {
+        filteredItems = filteredItems.filter((item) => item.category === args.category);
+      }
+
+      // Filter by mode if provided
+      if (args.mode) {
+        filteredItems = filteredItems.filter(
+          (item) => item.mode === args.mode || item.mode === "both"
+        );
+      }
+
+      // Filter by size if provided
+      if (args.size) {
+        filteredItems = filteredItems.filter((item) => item.size === args.size);
+      }
+
+      // Get owner information for each item
+      const itemsWithOwners = await Promise.all(
+        filteredItems.map(async (item) => {
+          const owner = await ctx.db.get(item.ownerId);
+          return {
+            ...item,
+            owner: owner ? { name: owner.name, image: owner.image } : null,
+          };
+        })
+      );
+
+      return itemsWithOwners;
+    } catch (err) {
+      console.error("getAvailable error:", err);
+      throw new Error("Failed to load available items. Please try again.");
+    }
   },
 });
 
@@ -128,16 +133,23 @@ export const getById = query({
     itemId: v.id("items"),
   },
   handler: async (ctx, args) => {
-    const item = await ctx.db.get(args.itemId);
-    if (!item) {
-      return null;
-    }
+    try {
+      const item = await ctx.db.get(args.itemId);
+      if (!item) {
+        return null;
+      }
 
-    const owner = await ctx.db.get(item.ownerId);
-    return {
-      ...item,
-      owner: owner ? { name: owner.name, image: owner.image, email: owner.email } : null,
-    };
+      const owner = await ctx.db.get(item.ownerId);
+      return {
+        ...item,
+        owner: owner
+          ? { name: owner.name, image: owner.image, email: owner.email }
+          : null,
+      };
+    } catch (err) {
+      console.error("getById error:", err);
+      throw new Error("Failed to fetch item details. Please try again.");
+    }
   },
 });
 

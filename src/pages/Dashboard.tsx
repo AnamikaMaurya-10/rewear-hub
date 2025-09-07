@@ -16,7 +16,7 @@ import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, Messa
 import { toast } from "sonner";
 
 export default function Dashboard() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Distance filter state
   const [radiusKm, setRadiusKm] = useState<number>(10);
@@ -188,6 +189,28 @@ export default function Dashboard() {
                   {user.name?.[0]?.toUpperCase() || "U"}
                 </div>
                 <span className="hidden md:inline">{user.name || "User"}</span>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={isLoggingOut}
+                onClick={async () => {
+                  try {
+                    setIsLoggingOut(true);
+                    await signOut();
+                    navigate("/");
+                  } finally {
+                    setIsLoggingOut(false);
+                  }
+                }}
+              >
+                {isLoggingOut ? (
+                  <>
+                    <Clock className="h-4 w-4 mr-2 animate-pulse" />
+                    Logging out...
+                  </>
+                ) : (
+                  "Logout"
+                )}
               </Button>
             </div>
           </div>

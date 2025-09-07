@@ -21,10 +21,11 @@ import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export default function Landing() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleGetStarted = () => {
     setIsNavigating(true);
@@ -126,6 +127,29 @@ export default function Landing() {
                   </>
                 )}
               </Button>
+              {isAuthenticated && (
+                <Button
+                  variant="outline"
+                  disabled={isLoggingOut}
+                  onClick={async () => {
+                    try {
+                      setIsLoggingOut(true);
+                      await signOut();
+                    } finally {
+                      setIsLoggingOut(false);
+                    }
+                  }}
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging out...
+                    </>
+                  ) : (
+                    "Logout"
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </div>
