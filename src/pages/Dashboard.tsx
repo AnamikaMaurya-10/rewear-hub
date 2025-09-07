@@ -12,7 +12,7 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, MessageCircle, TrendingUp, Crosshair, LocateIcon } from "lucide-react";
+import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, MessageCircle, TrendingUp, Crosshair, LocateIcon, Sun, Moon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Dashboard() {
@@ -28,6 +28,27 @@ export default function Dashboard() {
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Add: loading state for Add Item navigation
+  const [isNavToAdd, setIsNavToAdd] = useState(false);
+
+  // Add: Dark mode state + initialize from storage/media
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
 
   // Distance filter state
   const [radiusKm, setRadiusKm] = useState<number>(10);
@@ -154,16 +175,17 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900">
       {/* Header */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20 elevation-1"
+        className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20 elevation-1 dark:bg-zinc-900/80 dark:border-zinc-800"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+          {/* Make navbar responsive: allow wrap, hide long text on small, icon-only actions */}
+          <div className="flex flex-wrap gap-3 justify-between items-center h-auto py-3">
+            <div className="flex items-center space-x-3 min-w-0">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center elevation-2">
                 <Shirt className="h-6 w-6 text-white" />
               </div>
@@ -172,24 +194,69 @@ export default function Dashboard() {
               </span>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+              {/* Dark mode toggle */}
               <Button
-                onClick={() => navigate("/add-item")}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ripple elevation-2"
+                variant="ghost"
+                size="icon"
+                aria-label="Toggle theme"
+                onClick={() => setIsDark((v) => !v)}
+                className="elevation-2"
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Item
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
+
+              {/* Add Item: icon-only on small screens, text on md+; show loading spinner */}
+              <div className="flex items-center">
+                <Button
+                  onClick={async () => {
+                    setIsNavToAdd(true);
+                    navigate("/add-item");
+                  }}
+                  disabled={isNavToAdd}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ripple elevation-2 hidden sm:inline-flex"
+                >
+                  {isNavToAdd ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Opening...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Item
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={async () => {
+                    setIsNavToAdd(true);
+                    navigate("/add-item");
+                  }}
+                  disabled={isNavToAdd}
+                  size="icon"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ripple elevation-2 sm:hidden"
+                  aria-label="Add Item"
+                  title="Add Item"
+                >
+                  {isNavToAdd ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                </Button>
+              </div>
+
+              {/* Profile button: keep responsive (name hidden on small already) */}
               <Button
                 variant="ghost"
                 onClick={() => navigate("/profile")}
                 className="flex items-center space-x-2"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-zinc-700 dark:to-zinc-600 rounded-full flex items-center justify-center">
                   {user.name?.[0]?.toUpperCase() || "U"}
                 </div>
                 <span className="hidden md:inline">{user.name || "User"}</span>
               </Button>
+
+              {/* Logout already has loading state; keep as-is but ensure dark styles */}
               <Button
                 variant="outline"
                 disabled={isLoggingOut}
@@ -202,10 +269,11 @@ export default function Dashboard() {
                     setIsLoggingOut(false);
                   }
                 }}
+                className="dark:border-zinc-700"
               >
                 {isLoggingOut ? (
                   <>
-                    <Clock className="h-4 w-4 mr-2 animate-pulse" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Logging out...
                   </>
                 ) : (
