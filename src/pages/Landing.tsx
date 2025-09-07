@@ -167,6 +167,43 @@ export default function Landing() {
 
       {/* Hero Section with center CTAs and 3D feel */}
       <section className="relative overflow-hidden py-20 lg:py-32">
+        {/* Centered Login Button Overlay */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+        >
+          <div className="pointer-events-auto relative group" style={{ perspective: 1000 }}>
+            {/* Depth glow shadow */}
+            <div className="absolute -inset-1 translate-y-2 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 blur-md opacity-50 group-hover:opacity-70 transition-all"></div>
+            <motion.div
+              whileHover={{ rotateX: -3, rotateY: 3, y: -2, scale: 1.02 }}
+              whileTap={{ y: 2, scale: 0.99 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              style={{ transformStyle: "preserve-3d" }}
+              className="relative"
+            >
+              <Button
+                onClick={handleGetStarted}
+                disabled={isNavigating}
+                className="h-14 px-8 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg elevation-3 shadow-[0_12px_24px_rgba(79,70,229,0.35)]"
+              >
+                {isNavigating ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Please wait...
+                  </>
+                ) : (
+                  <>
+                    {isAuthenticated ? "Go to Dashboard" : "Login / Get Started"}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          </div>
+        </motion.div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 perspective-[1200px]">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
