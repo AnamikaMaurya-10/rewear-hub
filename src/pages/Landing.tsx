@@ -177,7 +177,7 @@ export default function Landing() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center"
+          className="hidden pointer-events-none absolute inset-0 z-50 flex items-center justify-center"
         >
           <div className="pointer-events-auto relative group" style={{ perspective: 1000 }}>
             {/* Depth glow shadow */}
@@ -247,6 +247,25 @@ export default function Landing() {
                   Join the sustainable fashion movement. Exchange clothes permanently or borrow for special occasions. 
                   Reduce waste, save money, and discover new styles.
                 </p>
+                <div className="pt-2">
+                  <Button
+                    onClick={handleGetStarted}
+                    disabled={isNavigating}
+                    className="relative h-12 px-7 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-base elevation-3 shadow-[0_10px_24px_rgba(79,70,229,0.28),0_4px_12px_rgba(59,130,246,0.2)] border border-white/10 ring-1 ring-white/10 transition-transform will-change-transform"
+                  >
+                    {isNavigating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Please wait...
+                      </>
+                    ) : (
+                      <>
+                        {isAuthenticated ? "Go to Dashboard" : "Login / Get Started"}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
               
               <div className="flex flex-col gap-3">
