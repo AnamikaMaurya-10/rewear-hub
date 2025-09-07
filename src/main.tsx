@@ -21,13 +21,27 @@ const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 function PoweredByVercel() {
   return (
     <a
-      href="https://vercel.com?utm_source=rewear&utm_medium=powered-by&utm_campaign=oss"
+      href="https://vercel.com/?utm_source=rewear&utm_medium=powered-by&utm_campaign=oss"
       target="_blank"
       rel="noreferrer"
-      className="fixed left-4 bottom-4 z-50 select-none rounded-full bg-gradient-to-r from-gray-900 to-gray-700 text-white px-3 py-1.5 text-xs font-medium shadow-lg hover:shadow-xl transition-shadow border border-white/10"
+      className="fixed left-4 bottom-4 z-50 select-none rounded-full bg-black text-white px-3 py-1.5 text-xs font-medium shadow-lg hover:shadow-xl transition-shadow border border-white/10"
       aria-label="Powered by Vercel"
     >
       Powered by Vercel
+    </a>
+  );
+}
+
+function PoweredByVly() {
+  return (
+    <a
+      href="https://vly.ai?utm_source=rewear&utm_medium=powered-by&utm_campaign=oss"
+      target="_blank"
+      rel="noreferrer"
+      className="fixed right-4 bottom-4 z-50 select-none rounded-full bg-gradient-to-r from-purple-700 to-blue-700 text-white px-3 py-1.5 text-xs font-medium shadow-lg hover:shadow-xl transition-shadow border border-white/10"
+      aria-label="Powered by vly.ai"
+    >
+      Powered by vly.ai
     </a>
   );
 }
@@ -55,6 +69,15 @@ function RouteSyncer() {
   return null;
 }
 
+function Root() {
+  return (
+    <>
+      <RouteSyncer />
+      <Outlet />
+    </>
+  );
+}
+
 const router = createBrowserRouter([
   {
     element: <Root />,
@@ -79,6 +102,7 @@ createRoot(document.getElementById("root")!).render(
         <Toaster />
         {/* Show only in production */}
         {import.meta.env.PROD && <PoweredByVercel />}
+        {import.meta.env.PROD && <PoweredByVly />}
       </ConvexAuthProvider>
     </InstrumentationProvider>
   </StrictMode>,
