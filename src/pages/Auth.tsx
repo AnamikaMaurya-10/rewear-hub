@@ -30,6 +30,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -37,6 +38,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       navigate(redirect);
     }
   }, [authLoading, isAuthenticated, navigate, redirectAfterAuth]);
+
   const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
@@ -76,6 +78,20 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       setIsLoading(false);
 
       setOtp("");
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    setError(null);
+    try {
+      await signIn("google");
+      const redirect = redirectAfterAuth || "/";
+      navigate(redirect);
+    } catch (err) {
+      console.error("Google login error:", err);
+      setError("Failed to sign in with Google. Please try again.");
+      setIsGoogleLoading(false);
     }
   };
 
@@ -161,17 +177,42 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-background px-2 text-muted-foreground">
-                          Or
+                          Or continue with
                         </span>
                       </div>
                     </div>
-                    
+
+                    {/* Google Login */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full mt-4"
+                      onClick={handleGoogleLogin}
+                      disabled={isLoading || isGoogleLoading}
+                    >
+                      {isGoogleLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Signing in...
+                        </>
+                      ) : (
+                        <>
+                          {/* Simple Google "G" mark */}
+                          <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded-sm bg-white">
+                            <span className="text-[12px] font-bold" style={{ color: "#4285F4" }}>G</span>
+                          </span>
+                          Continue with Google
+                        </>
+                      )}
+                    </Button>
+
+                    {/* Guest Login */}
                     <Button
                       type="button"
                       variant="outline"
                       className="w-full mt-4"
                       onClick={handleGuestLogin}
-                      disabled={isLoading}
+                      disabled={isLoading || isGoogleLoading}
                     >
                       <UserX className="mr-2 h-4 w-4" />
                       Continue as Guest

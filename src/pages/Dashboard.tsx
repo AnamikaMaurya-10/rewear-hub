@@ -12,7 +12,8 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, MessageCircle, TrendingUp } from "lucide-react";
+import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, MessageCircle, TrendingUp, Crosshair, LocateIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
@@ -26,6 +27,60 @@ export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
+
+  // Distance filter state
+  const [radiusKm, setRadiusKm] = useState<number>(10);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [locLoading, setLocLoading] = useState(false);
+
+  // Known city coordinates for seeded data
+  const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
+    Mumbai: { lat: 19.076, lon: 72.8777 },
+    Delhi: { lat: 28.6139, lon: 77.209 },
+    Bengaluru: { lat: 12.9716, lon: 77.5946 },
+    Hyderabad: { lat: 17.385, lon: 78.4867 },
+    Pune: { lat: 18.5204, lon: 73.8567 },
+    Chennai: { lat: 13.0827, lon: 80.2707 },
+    Kolkata: { lat: 22.5726, lon: 88.3639 },
+    Jaipur: { lat: 26.9124, lon: 75.7873 },
+  };
+
+  function toRad(deg: number) {
+    return (deg * Math.PI) / 180;
+  }
+
+  function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
+    const R = 6371;
+    const dLat = toRad(b.lat - a.lat);
+    const dLon = toRad(b.lon - a.lon);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const sinDLat = Math.sin(dLat / 2);
+    const sinDLon = Math.sin(dLon / 2);
+    const h = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLon * sinDLon;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      toast("Geolocation is not supported by your browser");
+      return;
+    }
+    setLocLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+        setLocLoading(false);
+        toast("Location set! Filtering by distance.");
+      },
+      (err) => {
+        console.error(err);
+        setLocLoading(false);
+        toast("Failed to get your location. Please allow permission and try again.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   // Map "all" sentinel to previous empty-string behavior expected by backend filters
   const normalize = (v: string) => (v === "all" ? "" : v);
@@ -60,6 +115,18 @@ export default function Dashboard() {
     item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.description.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
+
+  // Apply distance filter if we have userLocation
+  const distanceFilteredItems = (userLocation
+    ? filteredItems.filter((item) => {
+        const city = (item.location || "").trim();
+        const coords = CITY_COORDS[city as keyof typeof CITY_COORDS];
+        if (!coords) return false;
+        const d = distanceKm(userLocation, coords);
+        return d <= radiusKm;
+      })
+    : filteredItems
+  );
 
   const handleItemClick = (itemId: string) => {
     navigate(`/item/${itemId}`);
@@ -241,6 +308,7 @@ export default function Dashboard() {
                     
                     {/* Stack filters on mobile, 3 columns from sm+ */}
                     <div className="grid w-full grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* Category */}
                       <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Category" />
@@ -256,6 +324,7 @@ export default function Dashboard() {
                         </SelectContent>
                       </Select>
 
+                      {/* Mode */}
                       <Select value={selectedMode} onValueChange={setSelectedMode}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Mode" />
@@ -268,6 +337,7 @@ export default function Dashboard() {
                         </SelectContent>
                       </Select>
 
+                      {/* Size */}
                       <Select value={selectedSize} onValueChange={setSelectedSize}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Size" />
@@ -282,6 +352,54 @@ export default function Dashboard() {
                           <SelectItem value="xxl">XXL</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    {/* Distance filter row */}
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2 flex items-center gap-3">
+                        <Badge variant="outline" className="text-xs">Distance</Badge>
+                        <Select
+                          value={String(radiusKm)}
+                          onValueChange={(v) => setRadiusKm(parseInt(v))}
+                        >
+                          <SelectTrigger className="w-40">
+                            <SelectValue placeholder="Radius (km)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="5">5 km</SelectItem>
+                            <SelectItem value="10">10 km</SelectItem>
+                            <SelectItem value="25">25 km</SelectItem>
+                            <SelectItem value="50">50 km</SelectItem>
+                            <SelectItem value="100">100 km</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {userLocation ? (
+                          <span className="text-xs text-green-600">Location set ✓</span>
+                        ) : (
+                          <span className="text-xs text-gray-500">Set your location</span>
+                        )}
+                      </div>
+                      <div className="flex justify-start sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={requestLocation}
+                          disabled={locLoading}
+                          className="whitespace-nowrap"
+                        >
+                          {locLoading ? (
+                            <>
+                              <Clock className="h-4 w-4 mr-2 animate-pulse" />
+                              Getting location...
+                            </>
+                          ) : (
+                            <>
+                              <Crosshair className="h-4 w-4 mr-2" />
+                              Use my location
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -325,7 +443,7 @@ export default function Dashboard() {
                 transition={{ delay: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
               >
-                {filteredItems.map((item, index) => (
+                {distanceFilteredItems.map((item, index) => (
                   <motion.div
                     key={item._id}
                     initial={{ y: 20, opacity: 0 }}
@@ -428,7 +546,7 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {filteredItems.length === 0 && (
+            {distanceFilteredItems.length === 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -436,7 +554,11 @@ export default function Dashboard() {
               >
                 <Shirt className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
-                <p className="text-gray-600">Try adjusting your search or filters</p>
+                <p className="text-gray-600">
+                  {userLocation
+                    ? "Try increasing the distance or adjusting your search."
+                    : "Set your location to filter by distance, or adjust your filters."}
+                </p>
               </motion.div>
             )}
           </TabsContent>
