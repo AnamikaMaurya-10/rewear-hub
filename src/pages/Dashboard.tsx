@@ -35,12 +35,13 @@ export default function Dashboard() {
   // Map "all" sentinel to previous empty-string behavior expected by backend filters
   const normalize = (v: string) => (v === "all" ? "" : v);
 
-  const items = useQuery(api.items.getAvailable, {
-    category: normalize(selectedCategory) as any,
-    mode: normalize(selectedMode) as any,
-    size: normalize(selectedSize) as any,
-  });
+  // Build args for query: omit keys when "all" is selected
+  const args: any = {};
+  if (selectedCategory !== "all") args.category = selectedCategory;
+  if (selectedMode !== "all") args.mode = selectedMode;
+  if (selectedSize !== "all") args.size = selectedSize;
 
+  const items = useQuery(api.items.getAvailable, args);
   const myItems = useQuery(api.items.getMyItems);
   const myRequests = useQuery(api.requests.getMyRequests);
   const itemRequests = useQuery(api.requests.getMyItemRequests);
