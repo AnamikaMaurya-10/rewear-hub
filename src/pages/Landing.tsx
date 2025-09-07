@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { 
   Recycle, 
   Heart, 
@@ -17,14 +17,17 @@ import {
   Star,
   TrendingUp
 } from "lucide-react";
-import { useState } from "react";
+import { Loader2, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [term, setTerm] = useState("");
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleGetStarted = () => {
+    setIsNavigating(true);
     if (isAuthenticated) {
       navigate("/dashboard");
     } else {
@@ -32,10 +35,11 @@ export default function Landing() {
     }
   };
 
-  const handleSearch = () => {
-    const q = term.trim();
-    if (!q) return;
-    navigate(`/dashboard?q=${encodeURIComponent(q)}`);
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsNavigating(true);
+    const q = searchTerm.trim();
+    navigate(q ? `/dashboard?q=${encodeURIComponent(q)}` : "/dashboard");
   };
 
   const features = [
@@ -107,10 +111,20 @@ export default function Landing() {
               </Button>
               <Button 
                 onClick={handleGetStarted}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ripple elevation-2"
+                disabled={isNavigating}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ripple elevation-2 disabled:opacity-70"
               >
-                {isAuthenticated ? "Dashboard" : "Get Started"}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {isNavigating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait...
+                  </>
+                ) : (
+                  <>
+                    {isAuthenticated ? "Dashboard" : "Get Started"}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -149,42 +163,28 @@ export default function Landing() {
                 </p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg"
-                  onClick={handleGetStarted}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg px-8 py-6 ripple elevation-3"
-                >
-                  {isAuthenticated ? "Go to Dashboard" : "Start Exchanging"}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="text-lg px-8 py-6 border-2 hover:bg-gray-50 elevation-1"
-                >
-                  Watch Demo
-                </Button>
-              </div>
-
-              {/* Added: Quick Search */}
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
-                <Input
-                  placeholder="Search items (e.g., denim jacket, sneakers, dress)"
-                  value={term}
-                  onChange={(e) => setTerm(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSearch();
-                  }}
-                  className="elevation-1"
-                />
-                <Button
-                  onClick={handleSearch}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                >
-                  Search
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+              <div className="flex flex-col gap-3">
+                <form onSubmit={handleSearchSubmit} className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search items (e.g., denim jacket, party dress)..."
+                    className="pl-10 pr-28 h-12"
+                    disabled={isNavigating}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isNavigating}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-9 px-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                  >
+                    {isNavigating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Search"
+                    )}
+                  </Button>
+                </form>
               </div>
 
               {/* Stats */}
@@ -322,14 +322,34 @@ export default function Landing() {
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
               Join thousands of fashion enthusiasts who are already exchanging and borrowing clothes sustainably.
             </p>
-            <Button 
-              size="lg"
-              onClick={handleGetStarted}
-              className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-12 py-6 ripple elevation-3"
-            >
-              {isAuthenticated ? "Go to Dashboard" : "Join ReWear Today"}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                size="lg"
+                onClick={handleGetStarted}
+                disabled={isNavigating}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg px-8 py-6 ripple elevation-3 disabled:opacity-70"
+              >
+                {isNavigating ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Please wait...
+                  </>
+                ) : (
+                  <>
+                    {isAuthenticated ? "Go to Dashboard" : "Start Exchanging"}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 py-6 border-2 hover:bg-gray-50 elevation-1"
+                disabled={isNavigating}
+              >
+                Watch Demo
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>

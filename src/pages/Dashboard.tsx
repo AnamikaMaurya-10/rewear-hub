@@ -8,29 +8,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useNavigate, useLocation } from "react-router";
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Heart, 
-  Clock, 
-  MapPin, 
-  Star,
-  Shirt,
-  Package,
-  MessageCircle,
-  TrendingUp
-} from "lucide-react";
-import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, MessageCircle, TrendingUp } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // Read query param source
-  const initialQ = new URLSearchParams(location.search).get("q") ?? "";
-  const [searchQuery, setSearchQuery] = useState(initialQ);
+  const location = useLocation();
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get("q");
+    if (q) setSearchQuery(q);
+  }, [location.search]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
