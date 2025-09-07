@@ -199,3 +199,23 @@
   .p-spacing-5 { padding: 40px; }
   .p-spacing-6 { padding: 48px; }
 }
+
+/* Hide "Powered by vly.ai" badges/toolbars injected by the tooling */
+:where(
+  #vly-toolbar,
+  .vly-toolbar,
+  [data-vly-toolbar],
+  [data-vly],
+  .vly-powered-by,
+  [data-vly-powered],
+  .powered-by-vly,
+  [data-testid="vly-toolbar"],
+  [data-testid="powered-by-vly"]
+) {
+  display: none !important;
+}
+
+/* Fallback: hide vly.ai badge links if injected as a fixed-position element */
+div[style*="position: fixed"] a[href*="vly.ai"] {
+  display: none !important;
+}
