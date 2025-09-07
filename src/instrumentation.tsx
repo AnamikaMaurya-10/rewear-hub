@@ -87,22 +87,7 @@ function ErrorDialog({
               </div>
             </CollapsibleContent>
           </Collapsible>
-        </div>
-        <DialogFooter>
-          <a
-            href={`https://vly.ai/project/${import.meta.env.VITE_VLY_APP_ID}`}
-            target="_blank"
-          >
-            <Button>
-              <ExternalLink /> Open editor
-            </Button>
-          </a>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
+       
 type ErrorBoundaryState = {
   hasError: boolean;
   error: GenericError | null;
