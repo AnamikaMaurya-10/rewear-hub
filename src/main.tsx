@@ -18,7 +18,19 @@ import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
-
+function PoweredByVercel() {
+  return (
+    <a
+      href="https://vercel.com?utm_source=rewear&utm_medium=powered-by&utm_campaign=oss"
+      target="_blank"
+      rel="noreferrer"
+      className="fixed left-4 bottom-4 z-50 select-none rounded-full bg-gradient-to-r from-gray-900 to-gray-700 text-white px-3 py-1.5 text-xs font-medium shadow-lg hover:shadow-xl transition-shadow border border-white/10"
+      aria-label="Powered by Vercel"
+    >
+      Powered by Vercel
+    </a>
+  );
+}
 
 function RouteSyncer() {
   const location = useLocation();
@@ -65,6 +77,8 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <RouterProvider router={router} />
         <Toaster />
+        {/* Show only in production */}
+        {import.meta.env.PROD && <PoweredByVercel />}
       </ConvexAuthProvider>
     </InstrumentationProvider>
   </StrictMode>,
