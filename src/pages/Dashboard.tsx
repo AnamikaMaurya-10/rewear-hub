@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
@@ -50,6 +50,7 @@ export default function Dashboard() {
   }, [isDark]);
   const toggleDarkMode = () => setIsDark((d) => !d);
   const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // Distance filter state
   const [radiusKm, setRadiusKm] = useState<number>(10);
@@ -178,6 +179,20 @@ export default function Dashboard() {
       case "completed": return "bg-blue-100 text-blue-700 border-blue-200";
       case "returned": return "bg-gray-100 text-gray-700 border-gray-200";
       default: return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
+  const updateStatus = useMutation(api.requests.updateStatus);
+
+  const handleUpdate = async (reqId: string, status: "accepted" | "rejected") => {
+    try {
+      setUpdatingId(reqId);
+      await updateStatus({ requestId: reqId as any, status });
+      toast(status === "accepted" ? "Request accepted" : "Request rejected");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to update request");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -955,24 +970,41 @@ export default function Dashboard() {
                       </div>
                       
                       <div className="flex flex-col space-y-2">
-                        {request.status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => {/* Handle accept */}}
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                            >
-                              Accept
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {/* Handle reject */}}
-                            >
-                              Reject
-                            </Button>
-                          </>
-                        )}
+{request.status === "pending" && (
+  <>
+    <Button
+      size="sm"
+      onClick={() => handleUpdate(request._id, "accepted")}
+      disabled={updatingId === request._id}
+      className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-70"
+    >
+      {updatingId === request._id ? (
+        <>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Accepting...
+        </>
+      ) : (
+        "Accept"
+      )}
+    </Button>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => handleUpdate(request._id, "rejected")}
+      disabled={updatingId === request._id}
+      className="disabled:opacity-70"
+    >
+      {updatingId === request._id ? (
+        <>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Rejecting...
+        </>
+      ) : (
+        "Reject"
+      )}
+    </Button>
+  </>
+)}
 {request.status === "accepted" && (
   <Button
     size="sm"
