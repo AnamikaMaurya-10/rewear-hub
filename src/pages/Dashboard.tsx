@@ -203,9 +203,11 @@ export default function Dashboard() {
                 size="icon"
                 onClick={toggleDarkMode}
                 aria-label="Toggle dark mode"
-                className="shrink-0"
+                aria-pressed={isDark}
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                className={`shrink-0 rounded-full border-0 ring-1 ring-primary/30 hover:ring-primary/60 bg-white/70 dark:bg-black/30 backdrop-blur-md transition-colors ${isDark ? "text-yellow-400" : "text-blue-600"}`}
               >
-                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDark ? <Sun className="h-4 w-4 transition-transform duration-300" /> : <Moon className="h-4 w-4 transition-transform duration-300" />}
               </Button>
 
               <Button
@@ -268,12 +270,15 @@ export default function Dashboard() {
             <div className="md:hidden flex items-center gap-2">
               {/* Dark mode toggle */}
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
                 onClick={toggleDarkMode}
                 aria-label="Toggle dark mode"
+                aria-pressed={isDark}
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                className={`rounded-full border-0 ring-1 ring-primary/30 hover:ring-primary/60 bg-white/70 dark:bg-black/30 backdrop-blur-md transition-colors ${isDark ? "text-yellow-400" : "text-blue-600"}`}
               >
-                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDark ? <Sun className="h-4 w-4 transition-transform duration-300" /> : <Moon className="h-4 w-4 transition-transform duration-300" />}
               </Button>
 
               {/* Hamburger */}
