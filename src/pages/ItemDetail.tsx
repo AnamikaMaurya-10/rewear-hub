@@ -10,7 +10,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { ArrowLeft, MapPin, Shirt, IndianRupee, MessageCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Shirt, IndianRupee, MessageCircle, Share2 } from "lucide-react";
 import { useState } from "react";
 
 export default function ItemDetail() {
@@ -25,6 +25,7 @@ export default function ItemDetail() {
   );
 
   const [message, setMessage] = useState("");
+  const [activeImage, setActiveImage] = useState(0);
 
   if (isLoading) {
     return (
@@ -82,6 +83,15 @@ export default function ItemDetail() {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied!");
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
       <motion.header
@@ -119,9 +129,9 @@ export default function ItemDetail() {
               <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
                 {item?.images?.[0] ? (
                   <img
-                    src={item.images[0]}
+                    src={item.images[activeImage] || item.images[0]}
                     alt={item.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.03]"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -140,12 +150,47 @@ export default function ItemDetail() {
                   </div>
                 ) : null}
               </div>
+
+              {/* Thumbnails */}
+              {item?.images && item.images.length > 1 ? (
+                <div className="p-3 bg-white/70 backdrop-blur-sm border-t border-gray-100">
+                  <div className="flex gap-2 overflow-x-auto">
+                    {item.images.map((img, idx) => (
+                      <button
+                        key={img + idx}
+                        onClick={() => setActiveImage(idx)}
+                        className={`h-16 w-16 rounded-md overflow-hidden border transition-all ${
+                          activeImage === idx ? "ring-2 ring-purple-500 border-transparent" : "border-gray-200"
+                        }`}
+                        aria-label={`Preview ${idx + 1}`}
+                      >
+                        <img src={img} alt={`thumb-${idx}`} className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </Card>
 
             <div className="space-y-6">
               <Card className="border-0 elevation-2">
                 <CardHeader>
                   <CardTitle className="text-2xl">{item?.title || "Loading..."}</CardTitle>
+                  <div className="flex items-center gap-2 pt-2">
+                    <Badge className={getModeColor(item?.mode)}>{item?.mode}</Badge>
+                    {item?.borrowFee ? (
+                      <Badge className="bg-white text-gray-700 border border-gray-200">
+                        <IndianRupee className="h-3 w-3 mr-1" />
+                        {item.borrowFee}
+                      </Badge>
+                    ) : null}
+                    <div className="ml-auto">
+                      <Button variant="outline" size="sm" onClick={handleShare} className="elevation-1">
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-gray-700">{item?.description}</p>
@@ -156,12 +201,12 @@ export default function ItemDetail() {
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs capitalize">
                         Category: {item?.category}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs capitalize">
                         Condition: {item?.condition}
                       </Badge>
                     </div>
