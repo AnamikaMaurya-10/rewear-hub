@@ -121,6 +121,13 @@ export default function Dashboard() {
 
   const itemsLoading = items === undefined;
 
+  // Redirect to auth when not authenticated (avoid navigating during render)
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate("/auth");
+    }
+  }, [isLoading, user, navigate]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -130,7 +137,6 @@ export default function Dashboard() {
   }
 
   if (!user) {
-    navigate("/auth");
     return null;
   }
 
