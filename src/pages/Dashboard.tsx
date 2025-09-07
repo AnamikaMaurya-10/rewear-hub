@@ -28,6 +28,8 @@ export default function Dashboard() {
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [locLoading, setLocLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("browse");
 
   // Moved here: navigation/dark mode/mobile menu/chat loading states (MUST be before any early returns)
   const [isNavigatingAdd, setIsNavigatingAdd] = useState(false);
@@ -56,7 +58,6 @@ export default function Dashboard() {
   // Distance filter state
   const [radiusKm, setRadiusKm] = useState<number>(10);
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
-  const [locLoading, setLocLoading] = useState(false);
 
   // Known city coordinates for seeded data
   const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
@@ -394,7 +395,12 @@ export default function Dashboard() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
         >
-          <Card className="elevation-2 border-0 bg-gradient-to-br from-green-50 to-green-100">
+          <Card
+            className="elevation-2 border-0 bg-gradient-to-br from-green-50 to-green-100 transition transform hover:scale-[1.02] cursor-pointer"
+            onClick={() => setActiveTab("my-items")}
+            role="button"
+            tabIndex={0}
+          >
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-green-500 rounded-xl">
@@ -408,7 +414,12 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="elevation-2 border-0 bg-gradient-to-br from-blue-50 to-blue-100">
+          <Card
+            className="elevation-2 border-0 bg-gradient-to-br from-blue-50 to-blue-100 transition transform hover:scale-[1.02] cursor-pointer"
+            onClick={() => setActiveTab("requests")}
+            role="button"
+            tabIndex={0}
+          >
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-blue-500 rounded-xl">
@@ -422,7 +433,12 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="elevation-2 border-0 bg-gradient-to-br from-purple-50 to-purple-100">
+          <Card
+            className="elevation-2 border-0 bg-gradient-to-br from-purple-50 to-purple-100 transition transform hover:scale-[1.02] cursor-pointer"
+            onClick={() => setActiveTab("incoming")}
+            role="button"
+            tabIndex={0}
+          >
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-purple-500 rounded-xl">
@@ -452,7 +468,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Main Content */}
-        <Tabs defaultValue="browse" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Make tabs scrollable on mobile */}
           <TabsList className="flex w-full overflow-x-auto gap-2 bg-white elevation-1 p-1 rounded-lg">
             <TabsTrigger value="browse" className="whitespace-nowrap flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
