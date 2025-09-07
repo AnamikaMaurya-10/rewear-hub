@@ -43,32 +43,6 @@ function RouteSyncer() {
   return null;
 }
 
-function PoweredByVly() {
-  return (
-    <a
-      href="https://vly.ai"
-      target="_blank"
-      rel="noreferrer"
-      className="fixed bottom-4 right-4 z-50 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs px-3 py-1.5 shadow-lg hover:from-purple-700 hover:to-blue-700 transition-colors"
-      aria-label="Powered by vyl.ai"
-    >
-      Powered by vyl.ai
-    </a>
-  );
-}
-
-function Root() {
-  // Show the badge only in production (deployed) builds
-  const showBrand = import.meta.env.PROD;
-
-  return (
-    <div className="min-h-screen">
-      <RouteSyncer />
-      <Outlet />
-      {showBrand && <PoweredByVly />}
-    </div>
-  );
-}
 
 
 
