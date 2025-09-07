@@ -177,7 +177,7 @@ export default function Landing() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center"
         >
           <div className="pointer-events-auto relative group" style={{ perspective: 1000 }}>
             {/* Depth glow shadow */}
@@ -220,7 +220,7 @@ export default function Landing() {
         </motion.div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 perspective-[1200px]">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 gap-12 items-center">
             <motion.div
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -291,67 +291,6 @@ export default function Landing() {
                   </motion.div>
                 ))}
               </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              {/* Slight 3D card tilt on hover */}
-              <motion.div
-                whileHover={{ rotateX: -2, rotateY: 2, z: 10 }}
-                transition={{ type: "spring", stiffness: 120, damping: 12 }}
-              >
-                <div className="relative z-10">
-                  <Card className="elevation-4 border-0 bg-white/90 backdrop-blur-sm">
-                    <CardContent className="p-8">
-                      <div className="space-y-6">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
-                            <Recycle className="h-6 w-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-lg">Exchange Mode</h3>
-                            <p className="text-gray-600">Permanent swaps, completely free</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                            <Clock className="h-6 w-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-lg">Borrow Mode</h3>
-                            <p className="text-gray-600">Rent for events and occasions</p>
-                          </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
-                          <div className="flex items-center space-x-2 text-sm text-purple-700">
-                            <TrendingUp className="h-4 w-4" />
-                            <span className="font-medium">Trending: Sustainable fashion is up 300%</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                {/* Floating elements */}
-                <motion.div
-                  animate={{ y: [-10, 10, -10] }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                  className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20"
-                />
-                <motion.div
-                  animate={{ y: [10, -10, 10] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="absolute -bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full opacity-20"
-                />
-              </motion.div>
             </motion.div>
           </div>
         </div>
