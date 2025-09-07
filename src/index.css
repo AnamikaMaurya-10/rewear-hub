@@ -199,3 +199,8 @@
   .p-spacing-5 { padding: 40px; }
   .p-spacing-6 { padding: 48px; }
 }
+[href*="vly.ai"],
+.vly-footer,
+.vly-toolbar {
+  display: none !important;
+}
