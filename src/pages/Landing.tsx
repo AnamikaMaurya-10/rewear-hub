@@ -24,8 +24,8 @@ export default function Landing() {
   const { isAuthenticated, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleGetStarted = () => {
     setIsNavigating(true);
@@ -33,6 +33,17 @@ export default function Landing() {
       navigate("/dashboard");
     } else {
       navigate("/auth");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await signOut();
+    } catch (err) {
+      console.error("Logout failed:", err);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -110,6 +121,22 @@ export default function Landing() {
               <Button variant="ghost" className="hidden md:inline-flex">
                 Community
               </Button>
+              {isAuthenticated && (
+                <Button
+                  variant="outline"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut || isNavigating}
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging out...
+                    </>
+                  ) : (
+                    "Logout"
+                  )}
+                </Button>
+              )}
               <Button 
                 onClick={handleGetStarted}
                 disabled={isNavigating}
@@ -127,29 +154,6 @@ export default function Landing() {
                   </>
                 )}
               </Button>
-              {isAuthenticated && (
-                <Button
-                  variant="outline"
-                  disabled={isLoggingOut}
-                  onClick={async () => {
-                    try {
-                      setIsLoggingOut(true);
-                      await signOut();
-                    } finally {
-                      setIsLoggingOut(false);
-                    }
-                  }}
-                >
-                  {isLoggingOut ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging out...
-                    </>
-                  ) : (
-                    "Logout"
-                  )}
-                </Button>
-              )}
             </div>
           </div>
         </div>
