@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { 
   Plus, 
   Search, 
@@ -28,7 +28,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation(); // Read query param source
+  const initialQ = new URLSearchParams(location.search).get("q") ?? "";
+  const [searchQuery, setSearchQuery] = useState(initialQ);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");

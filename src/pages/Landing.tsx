@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
+import { Input } from "@/components/ui/input";
 import { 
   Recycle, 
   Heart, 
@@ -16,10 +17,12 @@ import {
   Star,
   TrendingUp
 } from "lucide-react";
+import { useState } from "react";
 
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [term, setTerm] = useState("");
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -27,6 +30,12 @@ export default function Landing() {
     } else {
       navigate("/auth");
     }
+  };
+
+  const handleSearch = () => {
+    const q = term.trim();
+    if (!q) return;
+    navigate(`/dashboard?q=${encodeURIComponent(q)}`);
   };
 
   const features = [
@@ -155,6 +164,26 @@ export default function Landing() {
                   className="text-lg px-8 py-6 border-2 hover:bg-gray-50 elevation-1"
                 >
                   Watch Demo
+                </Button>
+              </div>
+
+              {/* Added: Quick Search */}
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+                <Input
+                  placeholder="Search items (e.g., denim jacket, sneakers, dress)"
+                  value={term}
+                  onChange={(e) => setTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearch();
+                  }}
+                  className="elevation-1"
+                />
+                <Button
+                  onClick={handleSearch}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                >
+                  Search
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
 
