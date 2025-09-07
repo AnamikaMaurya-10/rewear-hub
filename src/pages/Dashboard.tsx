@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, MessageCircle, TrendingUp, Crosshair, LocateIcon, Menu, Sun, Moon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ export default function Dashboard() {
     if (q) setSearchQuery(q);
   }, [location.search]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
@@ -111,11 +112,14 @@ export default function Dashboard() {
   // Map "all" sentinel to previous empty-string behavior expected by backend filters
   const normalize = (v: string) => (v === "all" ? "" : v);
 
-  // Build args for query: omit keys when "all" is selected
-  const args: any = {};
-  if (selectedCategory !== "all") args.category = selectedCategory;
-  if (selectedMode !== "all") args.mode = selectedMode;
-  if (selectedSize !== "all") args.size = selectedSize;
+  // Build args for query: omit keys when "all" is selected (memoize to avoid needless reruns)
+  const args: any = useMemo(() => {
+    const a: any = {};
+    if (selectedCategory !== "all") a.category = selectedCategory;
+    if (selectedMode !== "all") a.mode = selectedMode;
+    if (selectedSize !== "all") a.size = selectedSize;
+    return a;
+  }, [selectedCategory, selectedMode, selectedSize]);
 
   const items = useQuery(api.items.getAvailable, args);
   const myItems = useQuery(api.items.getMyItems);
@@ -124,6 +128,9 @@ export default function Dashboard() {
   const updateStatus = useMutation(api.requests.updateStatus);
 
   const itemsLoading = items === undefined;
+
+  // Respect prefers-reduced-motion to disable heavy animations for users/devices
+  const prefersReducedMotion = useReducedMotion();
 
   // Redirect to auth when not authenticated (avoid navigating during render)
   useEffect(() => {
@@ -189,8 +196,8 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
       {/* Header */}
       <motion.header 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        initial={prefersReducedMotion ? false : { y: -20, opacity: 0 }}
+        animate={prefersReducedMotion ? {} : { y: 0, opacity: 1 }}
         className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20 elevation-1 dark:bg-black/40 dark:border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -376,8 +383,8 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
+          initial={prefersReducedMotion ? false : { y: 20, opacity: 0 }}
+          animate={prefersReducedMotion ? {} : { y: 0, opacity: 1 }}
           className="mb-8"
         >
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -390,8 +397,8 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
+          initial={prefersReducedMotion ? false : { y: 20, opacity: 0 }}
+          animate={prefersReducedMotion ? {} : { y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
         >
@@ -483,8 +490,8 @@ export default function Dashboard() {
           <TabsContent value="browse" className="space-y-6">
             {/* Search and Filters */}
             <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
+              initial={prefersReducedMotion ? false : { y: 20, opacity: 0 }}
+              animate={prefersReducedMotion ? {} : { y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               <Card className="elevation-2 border-0">
@@ -494,8 +501,8 @@ export default function Dashboard() {
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         placeholder="Search for clothes..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
                         className="pl-10"
                       />
                     </div>
@@ -603,12 +610,12 @@ export default function Dashboard() {
             {/* Items Grid */}
             {itemsLoading ? (
               <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={prefersReducedMotion ? false : { y: 20, opacity: 0 }}
+                animate={prefersReducedMotion ? {} : { y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
               >
-                {Array.from({ length: 8 }).map((_, i) => (
+                {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i} className="h-full border-0 elevation-2 overflow-hidden">
                     <Skeleton className="aspect-square w-full" />
                     <CardContent className="p-3 sm:p-4 space-y-3">
@@ -632,18 +639,14 @@ export default function Dashboard() {
               </motion.div>
             ) : (
               <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={prefersReducedMotion ? false : { y: 20, opacity: 0 }}
+                animate={prefersReducedMotion ? {} : { y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
               >
-                {distanceFilteredItems.map((item, index) => (
-                  <motion.div
+                {distanceFilteredItems.map((item) => (
+                  <div
                     key={item._id}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.1 * index }}
-                    whileHover={{ y: -5 }}
                     className="group cursor-pointer"
                     onClick={() => handleItemClick(item._id)}
                   >
@@ -735,15 +738,15 @@ export default function Dashboard() {
                         </div>
                       </CardContent>
                     </Card>
-                  </motion.div>
+                  </div>
                 ))}
               </motion.div>
             )}
 
             {distanceFilteredItems.length === 0 && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={prefersReducedMotion ? false : { opacity: 0 }}
+                animate={prefersReducedMotion ? {} : { opacity: 1 }}
                 className="text-center py-12"
               >
                 <Shirt className="h-16 w-16 text-gray-400 mx-auto mb-4" />

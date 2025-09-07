@@ -18,6 +18,18 @@ import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
+function PoweredByVercel() {
+  return (
+    <a
+      href="https://vercel.com?utm_source=rewear&utm_medium=app&utm_campaign=powered-by"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed left-3 bottom-3 z-50 text-xs px-2.5 py-1.5 rounded-md bg-black/70 text-white hover:bg-black/80 dark:bg-white/80 dark:text-black dark:hover:bg-white/90 transition-colors shadow"
+    >
+      Powered by Vercel
+    </a>
+  );
+}
 
 function RouteSyncer() {
   const location = useLocation();
