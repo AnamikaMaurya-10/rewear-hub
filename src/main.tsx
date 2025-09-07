@@ -18,7 +18,20 @@ import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
-
+function PoweredByVercel() {
+  if (!import.meta.env.PROD) return null;
+  return (
+    <a
+      href="https://vercel.com/?utm_source=vly&utm_campaign=powered-by"
+      target="_blank"
+      rel="noreferrer"
+      className="fixed bottom-4 left-4 z-50 rounded-full border border-white/10 bg-white/90 backdrop-blur px-3 py-1 text-xs font-medium text-gray-700 shadow hover:bg-white"
+      aria-label="Powered by Vercel"
+    >
+      Powered by Vercel
+    </a>
+  );
+}
 
 function RouteSyncer() {
   const location = useLocation();
@@ -48,6 +61,7 @@ function Root() {
     <>
       <RouteSyncer />
       <Outlet />
+      {import.meta.env.PROD && <PoweredByVercel />}
     </>
   );
 }
@@ -74,4 +88,8 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <RouterProvider router={router} />
         <Toaster />
-       
+        {/* ... rest of the code remains unchanged ... */}
+      </ConvexAuthProvider>
+    </InstrumentationProvider>
+  </StrictMode>
+);
