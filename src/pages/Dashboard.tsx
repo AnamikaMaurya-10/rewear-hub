@@ -12,8 +12,7 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, MessageCircle, TrendingUp, Crosshair, LocateIcon, Sun, Moon, Menu, Loader2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, Search, Filter, Heart, Clock, MapPin, Star, Shirt, Package, MessageCircle, TrendingUp, Crosshair, LocateIcon, Menu, Sun, Moon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Dashboard() {
@@ -29,30 +28,6 @@ export default function Dashboard() {
   const [selectedMode, setSelectedMode] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isNavLoading, setIsNavLoading] = useState(false);
-  const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
-
-  // Dark mode state + persistence
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") return true;
-    if (saved === "light") return false;
-    // fallback to system preference
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
-
-  const toggleDarkMode = () => setIsDark((d) => !d);
 
   // Distance filter state
   const [radiusKm, setRadiusKm] = useState<number>(10);
@@ -178,13 +153,36 @@ export default function Dashboard() {
     }
   };
 
+  // Add navigation/dark mode/mobile menu/chat loading states
+  const [isNavigatingAdd, setIsNavigatingAdd] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") return true;
+    if (saved === "light") return false;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
+  const toggleDarkMode = () => setIsDark((d) => !d);
+
+  const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-black">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
       {/* Header */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 bg-white/80 dark:bg-black/50 backdrop-blur-md border-b border-white/20 elevation-1"
+        className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20 elevation-1 dark:bg-black/40 dark:border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -198,16 +196,27 @@ export default function Dashboard() {
             </div>
             
             {/* Desktop actions */}
-            <div className="hidden md:flex items-center space-x-2 sm:space-x-4">
+            <div className="hidden md:flex items-center space-x-4">
+              {/* Dark mode toggle */}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleDarkMode}
+                aria-label="Toggle dark mode"
+                className="shrink-0"
+              >
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+
               <Button
                 onClick={() => {
-                  setIsNavLoading(true);
+                  setIsNavigatingAdd(true);
                   navigate("/add-item");
                 }}
-                disabled={isNavLoading}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ripple elevation-2 disabled:opacity-60"
+                disabled={isNavigatingAdd}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ripple elevation-2"
               >
-                {isNavLoading ? (
+                {isNavigatingAdd ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Opening...
@@ -219,39 +228,18 @@ export default function Dashboard() {
                   </>
                 )}
               </Button>
+
               <Button
                 variant="ghost"
-                onClick={() => {
-                  setIsNavLoading(true);
-                  navigate("/profile");
-                }}
-                disabled={isNavLoading}
-                className="flex items-center space-x-2 disabled:opacity-60"
+                onClick={() => navigate("/profile")}
+                className="flex items-center space-x-2"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
                   {user.name?.[0]?.toUpperCase() || "U"}
                 </div>
-                <span className="hidden sm:inline">{user.name || "User"}</span>
+                <span className="hidden md:inline">{user.name || "User"}</span>
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={toggleDarkMode}
-                aria-label="Toggle dark mode"
-                className="flex items-center"
-              >
-                {isDark ? (
-                  <>
-                    <Sun className="h-4 w-4 mr-2" />
-                    Light
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4 mr-2" />
-                    Dark
-                  </>
-                )}
-              </Button>
+
               <Button
                 variant="outline"
                 disabled={isLoggingOut}
@@ -276,80 +264,93 @@ export default function Dashboard() {
               </Button>
             </div>
 
-            {/* Mobile menu */}
-            <div className="md:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Open menu">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setIsNavLoading(true);
-                      navigate("/add-item");
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Item
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setIsNavLoading(true);
-                      navigate("/profile");
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <Package className="h-4 w-4 mr-2" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={toggleDarkMode}
-                    className="cursor-pointer"
-                  >
-                    {isDark ? (
-                      <>
-                        <Sun className="h-4 w-4 mr-2" />
-                        Light Mode
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="h-4 w-4 mr-2" />
-                        Dark Mode
-                      </>
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      try {
-                        setIsLoggingOut(true);
-                        await signOut();
-                        navigate("/");
-                      } finally {
-                        setIsLoggingOut(false);
-                      }
-                    }}
-                    className="cursor-pointer"
-                  >
-                    {isLoggingOut ? (
-                      <>
-                        <Clock className="h-4 w-4 mr-2 animate-pulse" />
-                        Logging out...
-                      </>
-                    ) : (
-                      <>
-                        <Clock className="h-4 w-4 mr-2" />
-                        Logout
-                      </>
-                    )}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            {/* Mobile actions */}
+            <div className="md:hidden flex items-center gap-2">
+              {/* Dark mode toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleDarkMode}
+                aria-label="Toggle dark mode"
+              >
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+
+              {/* Hamburger */}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setMobileMenuOpen((v: boolean) => !v)}
+                aria-label="Open menu"
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-white/20 dark:border-white/10 bg-white/90 dark:bg-black/60 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-2">
+              <Button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setIsNavigatingAdd(true);
+                  navigate("/add-item");
+                }}
+                disabled={isNavigatingAdd}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              >
+                {isNavigatingAdd ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Opening...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Item
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate("/profile");
+                }}
+                className="w-full"
+              >
+                Profile
+              </Button>
+              <Button
+                variant="outline"
+                disabled={isLoggingOut}
+                onClick={async () => {
+                  try {
+                    setIsLoggingOut(true);
+                    await signOut();
+                    setMobileMenuOpen(false);
+                    navigate("/");
+                  } finally {
+                    setIsLoggingOut(false);
+                  }
+                }}
+                className="w-full"
+              >
+                {isLoggingOut ? (
+                  <>
+                    <Clock className="h-4 w-4 mr-2 animate-pulse" />
+                    Logging out...
+                  </>
+                ) : (
+                  "Logout"
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </motion.header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -726,11 +727,24 @@ export default function Dashboard() {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">My Items</h2>
               <Button
-                onClick={() => navigate("/add-item")}
+                onClick={() => {
+                  setIsNavigatingAdd(true);
+                  navigate("/add-item");
+                }}
+                disabled={isNavigatingAdd}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Item
+                {isNavigatingAdd ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Opening...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Item
+                  </>
+                )}
               </Button>
             </div>
 
@@ -781,11 +795,24 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No items yet</h3>
                 <p className="text-gray-600 mb-4">Start by adding your first item to exchange or lend</p>
                 <Button
-                  onClick={() => navigate("/add-item")}
+                  onClick={() => {
+                    setIsNavigatingAdd(true);
+                    navigate("/add-item");
+                  }}
+                  disabled={isNavigatingAdd}
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Item
+                  {isNavigatingAdd ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Opening...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Your First Item
+                    </>
+                  )}
                 </Button>
               </div>
             )}
